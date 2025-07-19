@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: skipper-dev
+  namespace: postgresql
+spec:
+  name: skipper-dev
+  owner: soris-scdf-dev
+  cluster:
+    name: postgresql-citymat
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: dataflow-dev
+  namespace: postgresql
+spec:
+  name: dataflow-dev
+  owner: soris-scdf-dev
+  cluster:
+    name: postgresql-citymat

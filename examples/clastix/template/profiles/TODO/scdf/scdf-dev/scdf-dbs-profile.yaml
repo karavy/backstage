@@ -1,0 +1,17 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: scdf-dev-dbs-profile
+  namespace: soris-stage
+spec:
+  dependsOn:
+    - postgres-cluster-soris-citymat
+  clusterSelector:
+    matchLabels:
+      scdf-dev: scdf
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: scdf-dev-dbs-profile
+      kind: ConfigMap
+    - name: soris-scdf-dev-user-cm
+      kind: ConfigMap

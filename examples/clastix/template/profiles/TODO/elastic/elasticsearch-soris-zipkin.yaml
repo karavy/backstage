@@ -1,0 +1,88 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: elasticsearch-clusters-zipkin
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      elasticsearch-clusters: soris
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://helm.elastic.co
+      repositoryName: elastic
+      chartName: elastic/eck-stack
+      chartVersion: 0.15.0
+      releaseName: eck-stack-zipkin
+      releaseNamespace: elastic-zipkin
+      helmChartAction: Install
+      values: |
+        eck-elasticsearch:
+          fullnameOverride: es-zipkin
+          version: 7.17.26
+          nodeSets:
+            - count: 3
+              name: default
+              config:
+                action.auto_create_index: true
+                node.store.allow_mmap: false
+              podTemplate:
+                spec:
+                  containers:
+                  - name: elasticsearch
+                    resources:
+                      limits:
+                        memory: 4Gi
+                      requests:
+                        memory: 4Gi
+              volumeClaimTemplates:
+                - metadata:
+                    name: elasticsearch-data
+                  spec:
+                    accessModes:
+                      - ReadWriteOnce
+                    resources:
+                      requests:
+                        storage: 25Gi
+                    storageClassName: sc-ent-plus
+
+        eck-kibana:
+          fullnameOverride: kibana-zipkin
+          version: 7.17.26
+          elasticsearchRef:
+            name: es-zipkin
+            namespace: elastic-zipkin
+          ingress:
+            enabled: true
+            className: nginx-management
+            annotations:
+              cert-manager.io/cluster-issuer: dinova-letsencrypt
+              external-dns.alpha.kubernetes.io/target: mgmt.soris-stage.k8s.dinova.services
+              nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+            pathType: Prefix
+            hosts:
+              - host: kibana-zipkin.soris-stage.k8s.dinova.services
+                path: /
+            tls:
+              enabled: true
+              secretName: kibana-zipkin-tls
+    - repositoryURL: https://prometheus-community.github.io/helm-charts
+      repositoryName: prometheus-community
+      chartName: prometheus-community/prometheus-elasticsearch-exporter
+      chartVersion: 6.7.2
+      releaseName: prometheus-exporter
+      releaseNamespace: elastic-zipkin
+      helmChartAction: Install
+      values: |
+        es:
+          uri: https://elastic:$(ES_PASSWORD)@es-zipkin-es-http:9200
+          sslSkipVerify: true
+          slm: true
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: prometheus-stack
+        extraEnvSecrets:
+          ES_PASSWORD:
+            secret: es-zipkin-es-elastic-user
+            key: elastic

@@ -1,0 +1,48 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cert-manager-servicemonitor
+  namespace: soris-stage
+data:
+    cert-manager-servicemonitor.yaml: |
+        apiVersion: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        metadata:
+          labels:
+            app.kubernetes.io/component: controller
+            app.kubernetes.io/instance: cert-manager
+            app.kubernetes.io/name: cert-manager
+            release: prometheus-stack
+          name: cert-manager-controller
+          namespace: cert-manager
+        spec:
+          endpoints:
+            - interval: 60s
+              path: /metrics
+              scrapeTimeout: 30s
+              targetPort: 9402
+          jobLabel: cert-manager-controller
+          namespaceSelector:
+            matchNames:
+              - cert-manager
+          selector:
+            matchLabels:
+              app.kubernetes.io/component: controller
+              app.kubernetes.io/instance: cert-manager
+              app.kubernetes.io/name: cert-manager
+---
+kind: Profile
+apiVersion: config.projectsveltos.io/v1beta1
+metadata:
+  name: cert-manager-servicemonitor
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      profile: basic
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: cert-manager-servicemonitor
+      namespace: soris-stage
+      kind: ConfigMap

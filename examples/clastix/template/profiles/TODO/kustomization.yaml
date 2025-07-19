@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: soris-stage
+resources:
+  - secrets
+  - nginx-ingress
+  - mongodb
+  - metallb
+  - postgres
+  - elastic
+  - kafka
+  - argocd
+  - prometheus-stack
+  - nfs
+  - external-dns
+  - cert-manager-issuers
+  - scdf
+  - cert-manager-servicemonitor.yaml
+  - sftp-go (DEV Only)

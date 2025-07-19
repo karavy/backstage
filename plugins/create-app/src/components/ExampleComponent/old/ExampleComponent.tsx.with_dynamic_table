@@ -1,0 +1,184 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
+  Typography,
+  Box,
+  TextField,
+  Paper,
+  IconButton
+} from '@material-ui/core';
+import { Page, Header, Content, InfoCard } from '@backstage/core-components';
+import DeleteIcon from '@material-ui/icons/Delete';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+
+// Per semplicità, definiamo il contenuto degli step qui.
+// In un'app reale, questi sarebbero componenti separati.
+const Step1Content = () => {
+  const { control, watch } = useForm<FormValues>({
+    defaultValues: {
+      rules: [{ name: 'parametro-default', value: 'attivo' }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'rules',
+  });
+
+  const currentRules = watch('rules');
+
+  const [name, setName] = useState('')
+
+  useEffect(() => {
+    console.log('Dati attuali della tabella:', currentRules);
+  }, [currentRules]);
+
+  return (
+   <Box>
+     <TextField
+       fullWidth
+       label="Nome applicazione"
+       onChange={e => setName(e.target.value)}
+     />
+     <TextField
+       fullWidth
+       label="Nome applicazione"
+     />
+     <InfoCard 
+       title="IP Ranges"
+     >
+     {fields.map((item, index) => (
+       <Paper
+         style={{ padding: '16px', marginBottom: '16px', border: '1px solid #ddd' }}
+         variant="outlined"
+       >
+         <Box>
+           <IconButton onClick={() => remove(index)} aria-label="delete">
+             <DeleteIcon />
+           </IconButton>
+	 </Box>
+       </Paper>
+     ))}
+       <Button
+         variant="outlined"
+         color="primary"
+         startIcon={<AddCircleOutlineIcon />}
+         onClick={() => append({ name: 'pippo', value: 'pluto' })}
+       >
+         Aggiungi Parametro
+       </Button>
+     </InfoCard>
+   </Box>
+)};
+
+const Step2Content = () => <Typography>Contenuto del secondo passaggio: Configura le opzioni avanzate.</Typography>;
+const Step3Content = () => <Typography>Contenuto del terzo passaggio: Rivedi e conferma.</Typography>;
+
+
+// Funzione helper per ottenere il contenuto dello step corretto
+function getStepContent(step: number) {
+  switch (step) {
+    case 0:
+      return <Step1Content />;
+    case 1:
+      return <Step2Content />;
+    case 2:
+      return <Step3Content />;
+    default:
+      return 'Passaggio Sconosciuto';
+  }
+}
+
+// Array che definisce i nomi dei passaggi
+const steps = ['Dati Iniziali', 'Configurazione', 'Riepilogo e Conferma'];
+
+export interface WizardFormData {
+  rules: { name: string; value: string }[];
+  summaryNotes: string;
+  nome: string;
+  cognome: string;
+  // Aggiungi qui altri campi per altri step
+}
+
+// Il tipo di dati per una singola riga
+interface Rule {
+  name: string;
+  value: string;
+}
+
+// Il tipo di dati per l'intero set di valori gestiti dal form
+type FormValues = {
+  rules: Rule[];
+};
+
+export const ExampleComponent = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  // In un caso reale, qui raccoglieresti i dati da ogni form
+  // const [formData, setFormData] = useState({});
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleReset = () => {
+    setActiveStep(0);
+  };
+
+  const [formData, setFormData] = useState<WizardFormData>({
+    rules: [{ name: 'regola-iniziale', value: 'abilitata' }],
+    summaryNotes: '',
+  });
+
+  return (
+    <Page themeId="tool">
+      <Header title="Mio Wizard Custom" subtitle="Un esempio di interfaccia a passaggi" />
+      <Content>
+        <InfoCard title="Procedura Guidata">
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+
+          <Box mt={4} mb={2}>
+            {activeStep === steps.length ? (
+              // UI mostrata dopo aver completato tutti i passaggi
+              <div>
+                <Typography>Tutti i passaggi sono stati completati!</Typography>
+                <Button onClick={handleReset} variant="contained" color="primary" style={{marginTop: '20px'}}>
+                  Ricomincia
+                </Button>
+              </div>
+            ) : (
+              // UI mostrata durante i passaggi
+              <div>
+                <Box p={3} mb={3} border={1} borderColor="divider" borderRadius={4}>
+                  {getStepContent(activeStep)}
+                </Box>
+                
+                <div>
+                  <Button disabled={activeStep === 0} onClick={handleBack}>
+                    Indietro
+                  </Button>
+                  <Button variant="contained" color="primary" onClick={handleNext}>
+                    {activeStep === steps.length - 1 ? 'Fine' : 'Avanti'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Box>
+        </InfoCard>
+      </Content>
+    </Page>
+  );
+};

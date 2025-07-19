@@ -1,0 +1,19 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: mongodb-percona-operator
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      mongodb: percona
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://percona.github.io/percona-helm-charts
+      repositoryName: percona
+      chartName: percona/psmdb-operator
+      chartVersion: 1.18.0
+      releaseName: psmdb-operator
+      releaseNamespace: psmdb-operator
+      values: |
+        watchAllNamespaces: true

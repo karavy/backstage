@@ -1,0 +1,17 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: postgres-cluster-soris-citymat
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      soris-citymat: postgres-cluster
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: postgres-cluster-soris-citymat
+      namespace: soris-stage
+      kind: ConfigMap
+    - name: postgres-cluster-soris-citymat-secrets
+      namespace: soris-stage
+      kind: ConfigMap

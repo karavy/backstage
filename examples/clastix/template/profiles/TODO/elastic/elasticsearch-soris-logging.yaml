@@ -1,0 +1,430 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-cluster-logging
+  namespace: soris-stage
+data:
+  secret-elasticsearch-custom-roles.yaml: |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: elasticsearch-custom-roles
+      namespace: elastic-logging
+    data:
+      roles.yml: ZWNrX2xvZ3N0YXNoX3VzZXJfcm9sZToKICBjbHVzdGVyOiBbICJtb25pdG9yIiwgIm1hbmFnZV9pbG0iLCAicmVhZF9pbG0iLCAibWFuYWdlX2xvZ3N0YXNoX3BpcGVsaW5lcyIsICJtYW5hZ2VfaW5kZXhfdGVtcGxhdGVzIiwgImNsdXN0ZXI6YWRtaW4vaW5nZXN0L3BpcGVsaW5lL2dldCJdCiAgaW5kaWNlczoKICAtIG5hbWVzOiBbICJrYWZrYS0qIiwgImxvZ3N0YXNoIiwgImxvZ3N0YXNoLSoiLCAiZWNzLWxvZ3N0YXNoIiwgImVjcy1sb2dzdGFzaC0qIiwgImxvZ3MtKiIsICJtZXRyaWNzLSoiLCAic3ludGhldGljcy0qIiwgInRyYWNlcy0qIiBdCiAgICBwcml2aWxlZ2VzOiBbICJtYW5hZ2UiLCAid3JpdGUiLCAiY3JlYXRlX2luZGV4IiwgInJlYWQiLCAidmlld19pbmRleF9tZXRhZGF0YSIgXQ==
+    type: Opaque
+  logstash-logging.yaml: |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ls-syslog-kafka-pipeline
+      namespace: elastic-logging
+    stringData:
+      pipelines.yml: |-
+        - pipeline.id: main
+          config.string: |
+            input {
+              tcp {
+                port => "5000"
+                type => syslogDEV
+                codec => json_lines
+              }
+              tcp {
+                port => "5044"
+                type => syslogTEST
+                codec => json_lines
+              }
+              kafka {
+                bootstrap_servers => "jhipster-kafka-brokers.kafka-dev.svc.soris-stage-citymat.local:9092"
+                type => kafkaDEV
+                topics_pattern => ".*"
+                decorate_events => extended
+                # metadata_max_age_ms => 60000
+              }
+              kafka {
+                bootstrap_servers => "soris-kafka-brokers.kafka-test.svc.soris-stage-citymat.local:9092"
+                type => kafkaTEST
+                topics_pattern => ".*"
+                decorate_events => extended
+                # metadata_max_age_ms => 60000
+              }
+            }
+
+            filter {
+              if [type] == "syslogDEV" {
+                mutate {
+                  add_field => {
+                    "environment" => "DEV"
+                    "instance_name" => "%{app_name}:%{app_port}"
+                    "version" => "%{version}"
+                    "level" => "%{level}"
+                    "logger_name" => "%{logger_name}"
+                    "message" => "%{message}"
+                    "thread_name" => "%{thread_name}"
+                    "timestamp" => "%{DATE:timestamp}"
+                  }
+                }
+              }
+              if [type] == "kafkaDEV" {
+                mutate {
+                  add_field => {
+                    "kafka-extended" => "%{[@metadata][kafka]}"
+                    "kafka-topic" => "%{[@metadata][kafka][topic]}"
+                  }
+                }
+                ruby {
+                  code => '
+                    headers = event.get("[@metadata][kafka][headers]")
+                    if headers
+                      headers.each { |key, value|
+                        event.set("header_#{key}", value)
+                      }
+                    end
+                  '
+                }
+                date {
+                  match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+                }
+              }
+
+              if [type] == "kafkaTEST" {
+                mutate {
+                  add_field => {
+                    "kafka-extended" => "%{[@metadata][kafka]}"
+                    "kafka-topic" => "%{[@metadata][kafka][topic]}"
+                  }
+                }
+                ruby {
+                  code => '
+                    headers = event.get("[@metadata][kafka][headers]")
+                    if headers
+                      headers.each { |key, value|
+                        event.set("header_#{key}", value)
+                      }
+                    end
+                  '
+                }
+                date {
+                  match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+                }
+              }
+
+              mutate {
+                # workaround from https://github.com/elastic/logstash/issues/5115
+                add_field => { "[@metadata][LOGSTASH_DEBUG]" => "${LOGSTASH_DEBUG:false}" }
+              }
+            }
+
+            output {
+              if [type] == "syslogDEV" {
+                elasticsearch {
+                  index => "logs-dev"
+                  hosts => [ "${ECK_ES_HOSTS}" ]
+                  user => "${ECK_ES_USER}"
+                  password => "${ECK_ES_PASSWORD}"
+                  ssl_certificate_verification => true
+                  action => "create"
+                  cacert => "${ECK_ES_SSL_CERTIFICATE_AUTHORITY}"
+                }
+              }
+              if [type] == "kafkaDEV" {
+                elasticsearch {
+                  index => "kafka-dev"
+                  hosts => [ "${ECK_ES_HOSTS}" ]
+                  user => "${ECK_ES_USER}"
+                  password => "${ECK_ES_PASSWORD}"
+                  ssl_certificate_verification => true
+                  action => "create"
+                  cacert => "${ECK_ES_SSL_CERTIFICATE_AUTHORITY}"
+                }
+              }
+              if [type] == "syslogTEST" {
+                elasticsearch {
+                  index => "logs-test"
+                  hosts => [ "${ECK_ES_HOSTS}" ]
+                  user => "${ECK_ES_USER}"
+                  password => "${ECK_ES_PASSWORD}"
+                  ssl_certificate_verification => true
+                  action => "create"
+                  cacert => "${ECK_ES_SSL_CERTIFICATE_AUTHORITY}"
+                }
+              }
+              if [type] == "kafkaTEST" {
+                elasticsearch {
+                  index => "kafka-test"
+                  hosts => [ "${ECK_ES_HOSTS}" ]
+                  user => "${ECK_ES_USER}"
+                  password => "${ECK_ES_PASSWORD}"
+                  ssl_certificate_verification => true
+                  action => "create"
+                  cacert => "${ECK_ES_SSL_CERTIFICATE_AUTHORITY}"
+                }
+              }
+              if [@metadata][LOGSTASH_DEBUG] == "true" {
+                stdout {
+                  codec => rubydebug
+                }
+              }
+            }
+  elasticsearch-prometheus-rules.yaml: |
+    apiVersion: monitoring.coreos.com/v1
+    kind: PrometheusRule
+    metadata:
+      labels:
+        release: prometheus-stack
+      name: elasticsearch-logging
+      namespace: elastic-logging
+    spec:
+      groups:
+        - name: elasticsearch
+          rules:
+            - alert: Elastic_UP
+              expr: elasticsearch_up{job="elasticsearch"} != 1
+              for: 2m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: This server's Elasticsearch instance status has a value of {{ $value
+                  }}.
+                summary: 'Instance {{ $labels.instance }}: Elasticsearch instance status is
+              not 1'
+            - alert: Elastic_Cluster_Health_RED
+              expr: elasticsearch_cluster_health_status{color="red"} == 1
+              for: 5m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: 'Instance {{ $labels.instance }}: not all primary and replica shards
+              are allocated in elasticsearch cluster {{ $labels.cluster }}.'
+                summary: 'Instance {{ $labels.instance }}: not all primary and replica shards
+              are allocated in elasticsearch cluster {{ $labels.cluster }}'
+            - alert: Elastic_Cluster_Health_Yellow
+              expr: elasticsearch_cluster_health_status{color="yellow"} == 1
+              for: 5m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: 'Instance {{ $labels.instance }}: not all primary and replica shards
+              are allocated in elasticsearch cluster {{ $labels.cluster }}.'
+                summary: 'Instance {{ $labels.instance }}: not all primary and replica shards
+              are allocated in elasticsearch cluster {{ $labels.cluster }}'
+            - alert: Elasticsearch_JVM_Heap_Too_High
+              expr: elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"}
+                > 0.8
+              for: 15m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: The heap in {{ $labels.instance }} is over 80% for 15m.
+                summary: ElasticSearch node {{ $labels.instance }} heap usage is high
+            - alert: Elasticsearch_health_up
+              expr: elasticsearch_cluster_health_up != 1
+              for: 1m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node: {{ $labels.instance }} last scrape of the
+              ElasticSearch cluster health failed'
+                summary: 'ElasticSearch node: {{ $labels.instance }} last scrape of the ElasticSearch
+              cluster health failed'
+            - alert: Elasticsearch_Too_Few_Nodes_Running
+              expr: elasticsearch_cluster_health_number_of_nodes < 3
+              for: 5m
+              labels:
+                severity: alert
+                value: '{{$value}}'
+              annotations:
+                description: There are only {{$value}} < 3 ElasticSearch nodes running
+                summary: ElasticSearch running on less than 3 nodes
+            - alert: Elasticsearch_Count_of_JVM_GC_Runs
+              expr: rate(elasticsearch_jvm_gc_collection_seconds_count[5m]) > 5
+              for: 1m
+              labels:
+                severity: warning
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node {{ $labels.instance }}: Count of JVM GC runs
+              > 5 per sec and has a value of {{ $value }}'
+                summary: 'ElasticSearch node {{ $labels.instance }}: Count of JVM GC runs >
+              5 per sec and has a value of {{ $value }}'
+            - alert: Elasticsearch_GC_Run_Time
+              expr: rate(elasticsearch_jvm_gc_collection_seconds_sum[5m]) > 0.3
+              for: 1m
+              labels:
+                severity: warning
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node {{ $labels.instance }}: GC run time in seconds
+              > 0.3 sec and has a value of {{ $value }}'
+                summary: 'ElasticSearch node {{ $labels.instance }}: GC run time in seconds
+              > 0.3 sec and has a value of {{ $value }}'
+            - alert: Elasticsearch_json_parse_failures
+              expr: elasticsearch_cluster_health_json_parse_failures > 0
+              for: 1m
+              labels:
+                severity: warning
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node {{ $labels.instance }}: json parse failures
+              > 0 and has a value of {{ $value }}'
+                summary: 'ElasticSearch node {{ $labels.instance }}: json parse failures > 0
+              and has a value of {{ $value }}'
+            - alert: Elasticsearch_breakers_tripped
+              expr: rate(elasticsearch_breakers_tripped[5m]) > 0
+              for: 1m
+              labels:
+                severity: warning
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node {{ $labels.instance }}: breakers tripped >
+              0 and has a value of {{ $value }}'
+                summary: 'ElasticSearch node {{ $labels.instance }}: breakers tripped > 0 and
+              has a value of {{ $value }}'
+            - alert: Elasticsearch_health_timed_out
+              expr: elasticsearch_cluster_health_timed_out > 0
+              for: 1m
+              labels:
+                severity: warning
+                value: '{{$value}}'
+              annotations:
+                description: 'ElasticSearch node {{ $labels.instance }}: Number of cluster health
+              checks timed out > 0 and has a value of {{ $value }}'
+                summary: 'ElasticSearch node {{ $labels.instance }}: Number of cluster health
+              checks timed out > 0 and has a value of {{ $value }}'
+
+---
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: elasticsearch-clusters
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      elasticsearch-clusters: soris
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: elasticsearch-cluster-logging
+      namespace: soris-stage
+      kind: ConfigMap
+    - name: elasticsearch-cluster-logging-secrets
+      namespace: soris-stage
+      kind: ConfigMap
+  helmCharts:
+    - repositoryURL: https://helm.elastic.co
+      repositoryName: elastic
+      chartName: elastic/eck-stack
+      chartVersion: 0.15.0
+      releaseName: eck-stack-logging
+      releaseNamespace: elastic-logging
+      helmChartAction: Install
+      values: |
+        eck-elasticsearch:
+          fullnameOverride: es-logging
+          version: 8.16.1
+          auth:
+            roles:
+              - secretName: elasticsearch-custom-roles
+          secureSettings:
+            - secretName: es-logging-es-minio-s3
+          nodeSets:
+            - name: default
+              count: 3
+              config:
+                # cluster.name: es-logging
+                action.auto_create_index: true
+                node.store.allow_mmap: false
+                s3.client.minio.endpoint: "http://10.10.119.160:9000"
+              podTemplate:
+                spec:
+                  containers:
+                  - name: elasticsearch
+                    resources:
+                      limits:
+                        memory: 4Gi
+                      requests:
+                        memory: 4Gi
+              volumeClaimTemplates:
+                - metadata:
+                    name: elasticsearch-data
+                  spec:
+                    accessModes: [ReadWriteOnce]
+                    resources:
+                      requests:
+                        storage: 25Gi
+                    storageClassName: sc-ent-plus
+
+        eck-kibana:
+          fullnameOverride: kibana-logging
+          version: 8.16.1
+          elasticsearchRef:
+            name: es-logging
+            namespace: elastic-logging
+          ingress:
+            enabled: true
+            className: nginx-management
+            annotations:
+              cert-manager.io/cluster-issuer: dinova-letsencrypt
+              external-dns.alpha.kubernetes.io/target: mgmt.soris-stage.k8s.dinova.services
+              nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+            pathType: Prefix
+            hosts:
+              - host: kibana-logging.soris-stage.k8s.dinova.services
+                path: /
+            tls:
+              enabled: true
+              secretName: kibana-logging-tls
+
+        eck-logstash:
+          enabled: true
+          fullnameOverride: ls-logging
+          version: 8.16.1
+          config:
+            pipeline.ecs_compatibility: disabled
+          elasticsearchRefs:
+            - clusterName: eck
+              name: es-logging
+          pipelinesRef:
+            secretName: ls-syslog-kafka-pipeline
+          volumeClaimTemplates:
+            - metadata:
+                name: logstash-data
+              spec:
+                accessModes: [ReadWriteOnce]
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: sc-ent-plus
+          services:
+            - name: beats
+              service:
+                spec:
+                  ports:
+                  - {name: syslog-col, port: 5044, protocol: TCP, targetPort: 5044}
+                  - {name: syslog-dev, port: 5000, protocol: TCP, targetPort: 5000}
+                  type: NodePort
+    - repositoryURL: https://prometheus-community.github.io/helm-charts
+      repositoryName: prometheus-community
+      chartName: prometheus-community/prometheus-elasticsearch-exporter
+      chartVersion: 6.7.2
+      releaseName: prometheus-exporter
+      releaseNamespace: elastic-logging
+      helmChartAction: Install
+      values: |
+        es:
+          uri: https://elastic:$(ES_PASSWORD)@es-logging-es-http:9200
+          sslSkipVerify: true
+          slm: true
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: prometheus-stack
+        extraEnvSecrets:
+          ES_PASSWORD:
+            secret: es-logging-es-elastic-user
+            key: elastic

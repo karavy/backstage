@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: codbpgsqlto00 #Change me
+  namespace: citymat3
+spec:
+  clusterIP: None
+  ports:
+    - name: postgresql
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  labels:
+    kubernetes.io/service-name: codbpgsqlto00
+  name: codbpgsqlto00
+  namespace: citymat3
+addressType: IPv4
+ports:
+  - name: postgresql
+    protocol: TCP
+    port: 5432
+endpoints:
+  - addresses:
+      - 10.10.76.120
+    conditions: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cowsbap00 #Change me
+  namespace: citymat3
+spec:
+  clusterIP: None
+  ports:
+    - name: bap
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  labels:
+    kubernetes.io/service-name: cowsbap00
+  name: cowsbap00
+  namespace: citymat3
+addressType: IPv4
+ports:
+  - name: bap
+    protocol: TCP
+    port: 8080
+endpoints:
+  - addresses:
+      - 10.10.80.173
+    conditions: {}

@@ -1,0 +1,13 @@
+# sftpgo-share-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sftpgo-share-pvc # Nome chiaro per identificare lo scopo
+  namespace: sftpgo      # Deve essere nello stesso namespace di SFTPGo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi # Imposta la dimensione desiderata per lo share
+  storageClassName: sc-ent-plus # Usa la stessa storage class o una diversa se necessario

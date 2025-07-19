@@ -1,0 +1,10 @@
+apiVersion: promise.dinova.services/v1
+kind: cnpg
+metadata:
+  name: ${{ values.name }}
+  namespace: cnpg-system
+spec:
+  cpu: "${{ values.cpu }}"
+  memory: "${{ values.memory }}"
+  name: "${{ values.name }}"
+  storage: "${{ values.storage }}"

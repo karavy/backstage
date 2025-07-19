@@ -1,0 +1,117 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-citymat
+  namespace: postgresql
+spec:
+  affinity:
+    podAntiAffinityType: preferred
+    tolerations:
+    - effect: NoSchedule
+      key: mongodb
+      operator: Equal
+      value: 'true'
+  backup:
+    barmanObjectStore:
+      data:
+        compression: gzip
+        jobs: 4
+      destinationPath: s3://soris-dbs-backups/postgresql
+      endpointURL: http://10.10.119.160:9000
+      s3Credentials:
+        accessKeyId:
+          key: ACCESS_KEY
+          name: s3-creds
+        secretAccessKey:
+          key: SECRET_KEY
+          name: s3-creds
+      wal:
+        compression: gzip
+    retentionPolicy: 30d
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.6-13
+  instances: 3
+  ### IMPORTANTE PER PODMONITOR ###
+  inheritedMetadata:
+    labels:
+      release: prometheus-stack
+  managed:
+    roles:
+    - name: soris-scdf-dev
+      login: true
+      ensure: present
+      passwordSecret: { name: soris-scdf-dev-user }
+    - name: soris-scdf-test
+      createdb: true
+      createrole: true
+      login: true
+      ensure: present
+      passwordSecret: {name: soris-scdf-test-user}
+    - bypassrls: true
+      comment: soris prod user
+      connectionLimit: 4
+      createdb: true
+      createrole: true
+      login: true
+      name: sorisservice
+      passwordSecret: {name: soris-credentials}
+      replication: true
+      superuser: true
+      validUntil: '2053-04-12T15:04:05Z'
+    services:
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: "postgresql-citymat-lb"
+              annotations:
+                metallb.io/loadBalancerIPs: 10.10.119.153
+                metallb.io/allow-shared-ip: "key-to-share-1.2.3.4"
+            spec:
+              type: LoadBalancer
+  monitoring:
+    customQueriesConfigMap:
+    - {key: queries, name: cnpg-default-monitoring}
+    enablePodMonitor: true
+  postgresql:
+    pg_hba: [ host all all all md5 ]
+    syncReplicaElectionConstraint: { enabled: false }
+    parameters:
+      archive_mode: 'on'
+      archive_timeout: '5min'
+      auto_explain.log_min_duration: '10s'
+      dynamic_shared_memory_type: 'posix'
+      full_page_writes: 'on'
+      log_destination: 'csvlog'
+      log_directory: '/controller/log'
+      log_filename: 'postgres'
+      log_rotation_age: '0'
+      log_rotation_size: '0'
+      log_truncate_on_rotation: 'false'
+      logging_collector: 'on'
+      max_parallel_workers: '32'
+      max_replication_slots: '32'
+      max_worker_processes: '32'
+      pg_stat_statements.max: '10000'
+      pg_stat_statements.track: 'all'
+      shared_buffers: '150MB'
+      shared_memory_type: 'mmap'
+      shared_preload_libraries: ''
+      ssl_max_protocol_version: 'TLSv1.3'
+      ssl_min_protocol_version: 'TLSv1.3'
+      wal_keep_size: '512MB'
+      wal_level: 'logical'
+      wal_log_hints: 'on'
+      wal_receiver_timeout: '5s'
+      wal_sender_timeout: '5s'
+  primaryUpdateStrategy: unsupervised
+  replicationSlots:
+    highAvailability: {}
+    synchronizeReplicas: {}
+  resources:
+    limits: {cpu: '1', memory: 1Gi}
+    requests: {cpu: '1', memory: 1Gi}
+  startDelay: 300
+  stopDelay: 300
+  storage:
+    size: 40Gi
+    storageClass: sc-ent-plus

@@ -1,0 +1,234 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${{ values.clustername }}
+  namespace: ${{ values.clustername }}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: charts/capi-kamaji-vsphere
+      version: 'nil'  # GitRepository wants the version in the chart name
+      sourceRef:
+        kind: GitRepository
+        name: cluster-api-kamaji-vsphere
+        namespace: flux-system
+      interval: 12h
+  dependsOn:
+    - name: ${{ values.datastore }}
+  values:
+    vSphere:
+      # -- Datacenter to use
+      dataCenter: ${{ values.dcname }} #"EDA - Datacenter Elogic A - Produzione"
+      # -- VSphere server dns name or address
+      server: ${{ values.dcurl }} #"10.19.6.1"
+      # -- VSphere https TLS thumbprint
+      tlsThumbprint: ${{ values.dcthumbprint }} #"2D:91:19:B3:27:30:02:CE:C0:38:CF:77:EF:1B:E6:A8:4B:9C:BB:D6:C5:59:DD:6B:6C:DF:F2:65:83:24:C1:96"
+      # -- Create a secret with the VSphere credentials
+      identityRef:
+        # -- Specifies whether use VSphereClusterIdentity or Secret
+        type: VSphereClusterIdentity
+        # -- Specifies the name of the VSphereClusterIdentity or Secret
+        name: ${{ values.dccredsecret }} #vsphere-cluster-identity
+      # -- VSphere username
+      # username: "username"
+      # -- VSphere password
+      # password: "password"
+
+    ipamProvider:
+      # -- Enable the IPAMProvider usage
+      enabled: true
+      # -- IPAMProvider API group
+      apiGroup: ipam.cluster.x-k8s.io
+      # -- IPAMProvider kind: InClusterIPPool or GlobalInClusterIPPool
+      kind: InClusterIPPool
+      # -- IPAMProvider name
+      name: ${{ values.pampoolname }} #ipam-ip-pool
+      # -- IPAMProvider ranges
+      ranges:
+{% for ranges in values.ipampoolranges %}
+        - ${{ ranges.rangestart }}-${{ ranges.rangeend }}
+{% endfor %}
+        #- "10.10.119.51-10.10.119.150"
+      # -- IPAMProvider prefix
+      prefix: ${{ values.ipamrangeprefix }} #"24"
+      # -- IPAMProvider gateway
+      gateway: ${{ values.ipamrangegw }} #"10.10.119.1"
+
+    cluster:
+      # -- Cluster name. If unset, the release name will be used
+      name: ""
+      clusterNetwork:
+        serviceDomain: ${{ values.clusterdomain }} #soris-stage-citymat.local
+      controlPlane:
+        # -- Labels to add to the control plane
+        labels:
+          profile: basic
+          #fortigate: fabric
+          #loadbalancer: metallb
+          #nfs: storage
+          #cd: argocd
+          #monitoring: persistent
+          #postgres: cloudnative-pg
+          #mongodb: percona
+          #mongodb-cluster: soris
+          #elasticsearch: operator
+          #elasticsearch-clusters: soris
+          #kafka: strimzi-operator
+          #kafka-deployments: soris
+          #nginx-management: ingress
+          #nginx-prod: ingress
+          #soris-citymat: postgres-cluster
+          #letsencrypt: external-dns
+          #dinova-letsencypt: cert-manager
+          #scdf-test: scdf
+          #scdf-dev: scdf
+          #backup: kasten
+        # -- Number of control plane replicas
+        replicas: ${{ values.cpreplicas }} #3
+        # -- extraArgs for the control plane components
+        apiServer:
+          extraArgs:
+            - --cloud-provider=external
+        controllerManager:
+          extraArgs:
+            - --cloud-provider=external
+        # -- KamajiControlPlane dataStoreName
+        dataStoreName: ${{ values.datastore }} #soris-stage-datastore
+        addons:
+          # -- KamajiControlPlane coreDNS configuration
+          coreDNS: { }
+          # -- KamajiControlPlane kube-proxy configuration
+          kubeProxy: { }
+          # -- KamajiControlPlane konnectivity configuration
+          konnectivity: { }
+        kubelet:
+          # -- kubelet cgroupfs configuration
+          cgroupfs: systemd
+          # -- kubelet preferredAddressTypes order
+          preferredAddressTypes:
+            - InternalIP
+            - ExternalIP
+            - Hostname
+        network:
+          # -- Ingress configuration (optional)
+          #ingress: {}
+          # -- Type of service used to expose the Kubernetes API server
+          serviceType: LoadBalancer
+          # -- Address used to expose the Kubernetes API server. If not set, the service will be exposed on the first available address.
+          serviceAddress: ${{ values.apiserverip }} #"10.19.27.61"
+          # -- List of additional Subject Alternative Names to use for the API Server serving certificate
+          serviceAnnotations:
+            metallb.io/loadBalancerIPs: ${{ values.apiserverip }} #"10.19.27.61"
+          certSANs: [ "soris-stage.k8s.dinova.services", "10.10.119.254" ] #TODO
+        # -- Kubernetes version
+        version: ${{ values.k8sversion }} #v1.31.0
+        deployment:
+          nodeSelector:
+            node-role.kubernetes.io/tcp: ''
+          tolerations:
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/tcp
+              operator: Exists
+      metrics:
+        # -- Enable metrics collection. ServiceMonitor custom resource definition must be installed on the Management cluster.
+        enabled: true
+        # -- ServiceAccount for scraping metrics
+        serviceAccount:
+          # -- ServiceAccount name used for scraping metrics
+          name: kube-prometheus-stack-prometheus
+          # -- ServiceAccount namespace
+          namespace: monitoring-system
+
+    nodePools:
+{% for ninfo in values.nodeinfo %}
+      # Node Pool configuration
+      - name: ${{ ninfo.nodename }}
+        additionalCloudInitFiles: |
+          #cloud-config
+          timezone: Europe/Rome
+          package_update: true
+          packages:
+            - nfs-common
+        #dataStore: "SANEDAE1090-001_LUN58"
+        #dataStore: ""
+        # -- VSphere folder to store VMs
+        folder: ${{ ninfo.dcnodefolder }} #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        # -- VSphere resource pool to use
+        resourcePool: ${{ ninfo.dcnodepool }} #"/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        # -- VSphere storage policy to use
+        storagePolicyName: ${{ ninfo.dcnodestoragepolicy }} #"DATA4_ENT-PLUS_K8S"
+        # -- VSphere template to clone
+        #template: "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/ELOGIC/Developement CAPI/ubuntu-2204-kube-v1.30.0"
+        template: ${{ ninfo.dcnodevmtemplate }} #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
+        # -- VSphere network for VMs and CSI
+        network: ${{ ninfo.dcnodenetwork }} #"/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
+        # -- Number of worker VMs instances
+        replicas: ${{ ninfo.replicas  }}
+        # -- Taints to add to the node pool when joining the cluster
+        taints: 
+  {%- for taint in ninfo.taints -%}
+          ${{ taint.key }}: ${{ taint.value }}
+  {%- endfor -%}
+        # -- Labels to add to the node pool when joining the cluster
+        labels: 
+  {%- for label in ninfo.labels -%}
+          ${{ label.key }}: ${{ label.value }}
+  {%- endfor -%}
+        # -- Disk size of VM in GiB
+        diskGiB: ${{ ninfo.disk }}
+        # -- Memory to allocate to worker VMs
+        memoryMiB: ${{ ninfo.ram }}
+        # -- Number of vCPUs to allocate to worker instances
+        numCPUs: ${{ ninfo.cpu }}
+        # -- Use dhcp for ipv4 configuration
+        dhcp4: false
+        # -- Use an IPAMProvider pool to reserve IPs
+        # -- Static network routes if required
+        staticRoutes:
+          - to: 10.19.27.61
+            via: 10.10.119.254
+        addressesFromPools:
+          # -- Enable the IPAMProvider usage
+          enabled: true
+        # -- Nameservers for VMs DNS resolution if required
+        nameServers:
+          - "8.8.8.8"
+          - "1.1.1.1"
+        # # -- IP addresses to assign to the VMs if required
+        # ipAddrs: []
+        # -- Search domains suffixes if required
+        # searchDomains: []
+        # # -- VM network domain if required
+        # domain: ""
+        # # -- IPv4 gateway if required
+        # gateway: ""
+        # # -- users to create on machines
+        users:
+          - name: adminelogic
+            sshAuthorizedKeys: [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC4OzMk2yGhd/+WC3SDHjNS4desCLsqK2imEjbPXzaFs" ]
+            sudo: ALL=(ALL) NOPASSWD:ALL
+        autoscaling:
+          enabled: false
+          labels:
+            autoscaling: "enabled"
+          minSize: "2"
+          maxSize: "6"
+{% endfor %}
+
+    vSphereCloudControllerManager:
+      # -- Installs vsphere-cloud-controller-manager on the management cluster
+      enabled: true
+      secret:
+        # -- Specifies whether Secret should be created from config values
+        create: false
+        # -- The name of an existing Secret for vSphere.
+        name: cpi-config-secret
+      image:
+        tag: ${{ values.k8sversion }} #v1.31.0
+      nodeSelector:
+        node-role.kubernetes.io/tcp: ''
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/tcp
+          operator: Exists

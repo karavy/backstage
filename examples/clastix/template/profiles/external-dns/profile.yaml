@@ -1,0 +1,39 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: external-dns
+  namespace: ${{ values.clustername  }}
+spec:
+  clusterSelector:
+    matchLabels:
+      letsencrypt: external-dns
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: tsig-secret
+      namespace: ${{ values.clustername  }}
+      kind: ConfigMap
+  helmCharts:
+    - repositoryURL: oci://registry-1.docker.io/bitnamicharts
+      repositoryName: oci-bitnamicharts-external-dns
+      chartName: external-dns
+      chartVersion: ${{ values.externaldnschartver }}
+      releaseName: external-dns
+      releaseNamespace: external-dns
+      values: |
+        domainFilters:
+        - ${{ values.clustername }}.k8s.dinova.services
+        policy: sync
+        provider: rfc2136
+        rfc2136:
+          host: dns.elogic.it
+          minTTL: 300s
+          port: 53
+          secretName: tsig-secret
+          tsigAxfr: true
+          tsigKeyname: ${{ values.clustername }}.k8s.dinova.services
+          tsigSecretAlg: hmac-sha512
+          zone: k8s.dinova.services
+        sources:
+          - service
+          - ingress
+        txtOwnerId: ${{ values.clustername }}

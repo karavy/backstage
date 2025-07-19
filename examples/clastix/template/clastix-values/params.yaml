@@ -1,0 +1,45 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: ClastixParams
+metadata:
+  name: ${{ values.clustername }}
+spec:
+  apiserverip: ${{ values.apiserverip }}
+  clustername: ${{ values.clustername }}
+  clusterdomain: ${{ values.clusterdomain }}
+  cpreplicas: ${{ values.cpreplicas }}
+  datastore: ${{ values.datastore }}
+  k8sversion: ${{ values.k8sversion }}
+  dcname: ${{ values.dcname }}
+  dcurl: ${{ values.dcurl }}
+  dcthumbprint: ${{ values.dcthumbprint }}
+  dccredsecret: ${{ values.dccredsecret }}
+  ipampoolranges: 
+{% for ranges in values.ipampoolranges %}
+    - ${{ ranges.rangestart }}-${{ ranges.rangeend }}
+{% endfor %}
+  ipamrangeprefix: ${{ values.ipamrangeprefix }}
+  ipamrangegw: ${{ values.ipamrangegw }}
+  ipampoolname: ${{ values.ipampoolname }}
+  nodeinfo: 
+{%- for ninfo in values.nodeinfo %}
+    - name: ${{ ninfo.nodename }}
+      folder: ${{ ninfo.dcnodefolder }}
+      resourcePool: ${{ ninfo.dcnodepool }}
+      storagePolicyName: ${{ ninfo.dcnodestoragepolicy }}
+      template: ${{ ninfo.dcnodevmtemplate }}
+      network: ${{ ninfo.dcnodenetwork }}
+      replicas: ${{ ninfo.replicas  }}
+      taints:
+  {% for taint in ninfo.taints -%}
+        ${{ taint.key }}: ${{ taint.value }}
+  {%- endfor -%}
+        # -- Labels to add to the node pool when joining the cluster
+      labels:
+  {% for label in ninfo.labels -%}
+        ${{ label.key }}: ${{ label.value }}
+  {%- endfor -%}
+      diskGiB: ${{ ninfo.disk }}
+      memoryMiB: ${{ ninfo.ram }}
+      numCPUs: ${{ ninfo.cpu }}
+{% endfor %}
+

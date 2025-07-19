@@ -1,0 +1,26 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: elasticsearch-operator
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      elasticsearch: operator
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://helm.elastic.co
+      repositoryName: elastic
+      chartName: elastic/eck-operator
+      chartVersion: 2.15.0
+      releaseName: elastic-system
+      releaseNamespace: elastic-system
+      helmChartAction: Install
+      values: |
+        config:
+          metrics:
+            port: "30024"
+        podMonitor:
+          enabled: true
+          labels:
+            release: prometheus-stack

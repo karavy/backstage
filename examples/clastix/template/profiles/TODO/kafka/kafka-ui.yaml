@@ -1,0 +1,23 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: kafka-ui
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      kafka: strimzi-operator
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://provectus.github.io/kafka-ui-charts
+      repositoryName: kafka-ui
+      chartName: kafka-ui/kafka-ui
+      chartVersion: 0.7.5
+      releaseName: kafka-ui
+      releaseNamespace: kafka
+      values: |
+        yamlApplicationConfig:
+          kafka:
+            clusters:
+              - name: kafka-test
+                bootstrapServers: soris-kafka-bootstrap.kafka-test:9092

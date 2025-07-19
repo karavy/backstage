@@ -1,0 +1,17 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: dinova-letsencypt
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      dinova-letsencypt: cert-manager
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: cert-manager-tsig-secret
+      namespace: soris-stage
+      kind: ConfigMap
+    - name: dinova-letsencypt-cmap
+      namespace: soris-stage
+      kind: ConfigMap

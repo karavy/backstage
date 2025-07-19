@@ -1,0 +1,24 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: prometheus-stack
+spec:
+  clusterSelector:
+    matchLabels:
+      monitoring: persistent
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+  - repositoryURL: https://prometheus-community.github.io/helm-charts
+    repositoryName: prometheus-community
+    chartName: prometheus-community/kube-prometheus-stack
+    chartVersion: 72.2.0
+    releaseName: prometheus-stack
+    releaseNamespace: prometheus-stack
+    helmChartAction: Install
+    valuesFrom:
+      - kind: ConfigMap
+        name: grafana-values
+        namespace: soris-stage
+  policyRefs:
+    - kind: ConfigMap
+      name: soris-stage-monitoring-labs-tls

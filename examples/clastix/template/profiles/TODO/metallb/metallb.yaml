@@ -1,0 +1,17 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: metal-lb
+spec:
+  clusterSelector:
+    matchLabels:
+      loadbalancer: metallb
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+  - repositoryURL:    https://metallb.github.io/metallb
+    repositoryName:   metallb
+    chartName:        metallb/metallb
+    chartVersion:     0.14.9
+    releaseName:      metallb
+    releaseNamespace: metallb-system
+    helmChartAction:  Install

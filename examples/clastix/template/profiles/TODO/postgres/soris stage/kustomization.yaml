@@ -1,0 +1,15 @@
+# kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - profile.yaml
+  - secrets/cluster-secrets.yaml
+
+configMapGenerator:
+- name: postgres-cluster-soris-citymat
+  namespace: soris-stage
+
+  files:
+  - cluster-definition.yaml=cluster.yaml
+generatorOptions:
+  disableNameSuffixHash: true

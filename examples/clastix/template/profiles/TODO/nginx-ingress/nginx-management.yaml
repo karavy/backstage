@@ -1,0 +1,73 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: nginx-management
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      nginx-management: ingress
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+  - repositoryURL: oci://registry-1.docker.io/bitnamicharts
+    repositoryName: bitnami
+    chartName: nginx-ingress-controller
+    chartVersion: 11.6.20
+    releaseName: nginx-ingress-controller
+    releaseNamespace: nginx-management
+    helmChartAction: Install
+    values: |
+      allowSnippetAnnotations: true
+      nameOverride: nginx-management
+      kind: Deployment
+      ingressClassResource:
+        controllerClass: k8s.io/ingress-nginx-mgmt
+        default: false
+        enabled: true
+        name: nginx-management
+      extraArgs:
+        ingress-class: nginx-management
+        enable-ssl-passthrough: '' # per argocd
+      service:
+        type: LoadBalancer
+        annotations:
+          external-dns.alpha.kubernetes.io/hostname: mgmt.soris-stage.k8s.dinova.services
+          external-dns.alpha.kubernetes.io/target: '185.96.206.228'
+          metallb.io/loadBalancerIPs: 10.10.119.151
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          namespace: 'prometheus-stack'
+      config:
+        enable-real-ip: "true"  # Forward client IP
+        annotations-risk-level: Critical  # after 1.12 for using snippets
+      tolerations:
+        - effect: NoSchedule
+          key: ingress
+          operator: Equal
+          value: 'true'
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: ingress
+                operator: In
+                values:
+                - 'true'
+      defaultBackend:
+        tolerations:
+          - effect: NoSchedule
+            key: ingress
+            operator: Equal
+            value: 'true'
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: ingress
+                  operator: In
+                  values:
+                  - 'true'

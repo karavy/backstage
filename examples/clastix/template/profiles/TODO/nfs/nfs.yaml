@@ -1,0 +1,31 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: nfs-sc
+  namespace: kube-system
+spec:
+  clusterSelector:
+    matchLabels:
+      nfs: storage
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: nfs-sc
+      namespace: soris-stage
+      kind: ConfigMap
+#    - name: nfs-csi-driver
+#      namespace: soris-stage
+#      kind: ConfigMap
+  helmCharts:
+    - repositoryURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+      repositoryName: csi-driver-nfs
+      chartName: csi-driver-nfs/csi-driver-nfs
+      chartVersion: 4.11.0
+      releaseName: csi-driver-nfs
+      releaseNamespace: kube-system
+      helmChartAction: Install
+      values: |
+        controller:
+          resources:
+            nfs:
+              limits:
+                memory: 1Gi

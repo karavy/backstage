@@ -1,0 +1,71 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: kafka-akhq
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      kafka: strimzi-operator
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://akhq.io/
+      repositoryName: akhq
+      chartName: akhq/akhq
+      chartVersion: 0.24.0
+      releaseName: akhq
+      releaseNamespace: kafka
+      values: |
+        configuration:
+          akhq:
+            security:
+              enabled: true
+              default-group: no-roles
+              basic-auth:
+                - username: admin
+        #          password: adminSoris2024@!!@
+                  password: ed21ed0e43a97d4c6908eb17fc9521901705461574d0ae86e194e43e8d008524
+                  groups:
+                    - admin
+                - username: user
+        #          password: userSoris2024@
+                  password: bd80a6cfddcb13b740b20f4824b290d8ad7a3801ed8bb8c77fe50e2ca5120242
+                  groups:
+                    - reader
+            server:
+              access-log:
+                enabled: true
+                name: org.akhq.log.access
+          micronaut:
+            security:
+              enabled: true
+              default-group: no-roles
+              token:
+                jwt:
+                  signatures:
+                    secret:
+                      generator:
+                        secret: 614608d7df376f67e65f9678f150771566a87069da5d8440cc80bff0f62d52c5
+
+        ingress:
+          enabled: true
+          ingressClassName: nginx-management
+          annotations:
+            cert-manager.io/cluster-issuer: dinova-letsencrypt
+            external-dns.alpha.kubernetes.io/target: mgmt.soris-stage.k8s.dinova.services
+          hosts:
+            - akhq.soris-stage.k8s.dinova.services
+          tls:
+            - secretName: akhq-tls
+              hosts:
+                - akhq.soris-stage.k8s.dinova.services
+
+        secrets:
+          akhq:
+            connections:
+              citymat3-development:
+                properties:
+                  bootstrap.servers: "jhipster-kafka-bootstrap.kafka-dev.svc:9092"
+              citymat3-test:
+                properties:
+                  bootstrap.servers: "soris-kafka-bootstrap.kafka-test.svc:9092"

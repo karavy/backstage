@@ -1,0 +1,72 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: nginx-prod
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      nginx-prod: ingress
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+  - repositoryURL: oci://registry-1.docker.io/bitnamicharts
+    repositoryName: bitnami
+    chartName: nginx-ingress-controller
+    chartVersion: 11.6.20
+    releaseName: nginx-ingress-controller
+    releaseNamespace: nginx-prod
+    helmChartAction: Install
+    values: |
+      allowSnippetAnnotations: true
+      nameOverride: nginx-prod
+      kind: Deployment
+      ingressClassResource:
+        controllerClass: k8s.io/ingress-nginx-prod
+        default: false
+        enabled: true
+        name: nginx-prod
+      extraArgs:
+        ingress-class: nginx-prod
+      service:
+        type: LoadBalancer
+        annotations:
+          metallb.io/loadBalancerIPs: 10.10.119.152
+          external-dns.alpha.kubernetes.io/hostname: prod.soris-stage.k8s.dinova.services
+          external-dns.alpha.kubernetes.io/target: '185.96.206.229'
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          namespace: 'prometheus-stack'
+      config:
+        enable-real-ip: "true"  # Forward client IP
+        annotations-risk-level: Critical  # after 1.12 for using snippets
+      tolerations:
+        - effect: NoSchedule
+          key: ingress
+          operator: Equal
+          value: 'true'
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: ingress
+                operator: In
+                values:
+                - 'true'
+      defaultBackend:
+        tolerations:
+          - effect: NoSchedule
+            key: ingress
+            operator: Equal
+            value: 'true'
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: ingress
+                  operator: In
+                  values:
+                  - 'true'

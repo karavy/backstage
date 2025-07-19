@@ -1,0 +1,56 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: scdf-test
+  namespace: prometheus-stack 
+  labels:
+    release: prometheus-stack
+spec:
+  metricsPath: /actuator/prometheus
+  fileSDConfigs:
+    - files:
+        - /etc/prometheus/targets.json
+      refreshInterval: 30s
+  # Prometheus Operator aggiungerà automaticamente un label 'job' basato su namespace/nome_crd.
+  # Se vuoi un label 'job' specifico e diverso, puoi usare relabelings:
+  # relabelings:
+  # - sourceLabels: []
+  #   targetLabel: job
+  #   replacement: "scdf" # Il tuo job_name originale
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: test-rsocket-proxy
+  namespace: prometheus-stack 
+  labels:
+    release: prometheus-stack
+spec:
+  scrapeInterval: 10s
+  scrapeTimeout: 9s
+  metricsPath: /metrics/proxy
+  staticConfigs:
+    - targets: ['scdf-spring-cloud-dataflow-prometheus-proxy.scdf-test.svc:8080']
+  # relabelings:
+  # - sourceLabels: []
+  #   targetLabel: job
+  #   replacement: "test-rsocket-proxy"
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: test-rsocket-connected
+  namespace: prometheus-stack 
+  labels:
+    release: prometheus-stack
+spec:
+  scrapeInterval: 10s
+  scrapeTimeout: 9s
+  metricsPath: /metrics/connected
+  staticConfigs:
+    - targets: ['scdf-spring-cloud-dataflow-prometheus-proxy.scdf-test.svc:8080']
+  # relabelings:
+  # - sourceLabels: []
+  #   targetLabel: job
+  #   replacement: "test-rsocket-connected"

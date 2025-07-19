@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: dinova-letsencrypt
+  namespace: cert-manager
+spec:
+  acme:
+    email: privatecloud-k8s.notify@dinova.one
+    preferredChain: ''
+    privateKeySecretRef:
+      name: dinova-letsencrypt
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          rfc2136:
+            nameserver: dns.elogic.it
+            tsigAlgorithm: HMACSHA512
+            tsigKeyName: soris-stage.k8s.dinova.services
+            tsigSecretSecretRef:
+              key: rfc2136_tsig_secret
+              name: tsig-secret

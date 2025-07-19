@@ -1,0 +1,57 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: soris-sftpgo-profile
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      scdf-test: scdf
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: oci://ghcr.io/sftpgo/helm-charts
+      repositoryName: sftpgo
+      chartName: sftpgo
+      chartVersion: 0.40.0
+      releaseName: sftpgo
+      releaseNamespace: sftpgo
+      helmChartAction: Install
+      values: |
+        service:
+          ports:
+            ftp:
+              passiveRange:
+                start: 50000
+                end: 50100
+        ftpd:
+          enabled: true
+        ui:
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: dinova-letsencrypt
+              external-dns.alpha.kubernetes.io/target: mgmt.soris-stage.k8s.dinova.services
+            className: nginx-management
+            hosts:
+              - host: sftpgo.soris-stage.k8s.dinova.services
+                paths:
+                - path: /
+                  pathType: ImplementationSpecific
+            tls:
+              - secretName: sftpgo-tls
+                hosts:
+                  - sftpgo.soris-stage.k8s.dinova.services
+        persistence:
+          enabled: true
+          pvc:
+            storageClassName: sc-ent-plus
+        volumes:
+          - name: sftpgo-share
+            persistentVolumeClaim:
+              claimName: sftpgo-share-pvc
+        volumeMounts:
+          - name: sftpgo-share
+            mountPath: /srv/sftpgo/share
+  policyRefs:
+    - name: sftpgo-pvc-share
+      kind: ConfigMap

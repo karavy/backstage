@@ -1,0 +1,165 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-deployment
+  namespace: soris-stage
+data:
+  kafka-dev-cluster.yaml: |
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: kafka-dev
+    ---
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: KafkaNodePool
+    metadata:
+      name: single-node
+      namespace: kafka-dev
+      labels:
+        strimzi.io/cluster: jhipster
+    spec:
+      replicas: 1
+      roles:
+        - controller
+        - broker
+      storage:
+        type: jbod
+        volumes:
+          - id: 0
+            type: persistent-claim
+            size: 10Gi
+            deleteClaim: false
+            kraftMetadata: shared
+    ---
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: Kafka
+    metadata:
+      name: jhipster
+      namespace: kafka-dev
+      annotations:
+        strimzi.io/node-pools: enabled
+        strimzi.io/kraft: enabled
+    spec:
+      kafka:
+        version: 3.9.0
+        metadataVersion: 3.9-IV0
+        listeners:
+          - name: plain
+            port: 9092
+            type: internal
+            tls: false
+          - name: tls
+            port: 9093
+            type: internal
+            tls: true
+        config:
+          offsets.topic.replication.factor: 1
+          transaction.state.log.replication.factor: 1
+          transaction.state.log.min.isr: 1
+          default.replication.factor: 1
+          min.insync.replicas: 1
+      entityOperator:
+        topicOperator: {}
+        userOperator: {}
+
+  kafka-test-cluster.yaml: |
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: kafka-test
+    ---
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: Kafka
+    metadata:
+      name: soris
+      namespace: kafka-test
+    spec:
+      entityOperator:
+        topicOperator: {}
+        userOperator: {}
+      kafka:
+        config:
+          auto.create.topics.enable: 'true'
+          default.replication.factor: 3
+          inter.broker.protocol.version: '3.8'
+          min.insync.replicas: 2
+          offsets.topic.replication.factor: 3
+          transaction.state.log.min.isr: 2
+          transaction.state.log.replication.factor: 3
+        listeners:
+          - name: plain
+            port: 9092
+            tls: false
+            type: internal
+          - name: tls
+            port: 9093
+            tls: true
+            type: internal
+        readinessProbe:
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+        replicas: 3
+        storage:
+          type: jbod
+          volumes:
+          - class: sc-ent-plus
+            deleteClaim: false
+            id: 0
+            size: 10Gi
+            type: persistent-claim
+        version: 3.8.0
+      zookeeper:
+        jvmOptions:
+          javaSystemProperties:
+          - name: zookeeper.ssl.hostnameVerification
+            value: 'false'
+          - name: zookeeper.ssl.quorum.hostnameVerification
+            value: 'false'
+        readinessProbe:
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+        replicas: 3
+        storage:
+          class: sc-ent-plus
+          deleteClaim: false
+          size: 3Gi
+          type: persistent-claim
+  kafka-collaudo-topic.yaml: |
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: KafkaTopic
+    metadata:
+      labels:
+        strimzi.io/cluster: soris
+      name: batch-end-queue-collaudo-utente
+      namespace: kafka-test
+    spec:
+      partitions: 1
+      replicas: 3
+      topicName: batch-end-queue-collaudo-utente
+  # kafka-collaudo-x-topic.yaml: |
+  #   apiVersion: kafka.strimzi.io/v1beta2
+  #   kind: KafkaTopic
+  #   metadata:
+  #     labels:
+  #       strimzi.io/cluster: soris
+  #     name: batch-end-queue-collaudo-utente-x
+  #     namespace: kafka-test
+  #   spec:
+  #     partitions: 2
+  #     replicas: 3
+  #     topicName: batch-end-queue-collaudo-utente
+---
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: kafka-deployments
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      kafka-deployments: soris
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: kafka-deployment
+      namespace: soris-stage
+      kind: ConfigMap

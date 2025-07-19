@@ -1,0 +1,36 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: metallb-l2-config
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      loadbalancer: metallb
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: metallb-l2-config
+      namespace: soris-stage
+      kind: ConfigMap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metallb-l2-config
+  namespace: soris-stage
+data:
+  ip_address_pool.yaml: |
+    apiVersion: metallb.io/v1beta1
+    kind: IPAddressPool
+    metadata:
+      name: provisioned-pool
+      namespace: metallb-system
+    spec:
+      addresses:
+      - 10.10.119.151-10.10.119.159
+  l2_advertisement.yaml: |
+    apiVersion: metallb.io/v1beta1
+    kind: L2Advertisement
+    metadata:
+      name: metallb-l2-adv
+      namespace: metallb-system

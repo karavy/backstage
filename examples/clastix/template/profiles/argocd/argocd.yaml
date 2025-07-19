@@ -1,0 +1,103 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: argocd
+  namespace: ${{ values.clustername }}
+spec:
+  clusterSelector:
+    matchLabels:
+      cd: argocd
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: https://argoproj.github.io/argo-helm
+      repositoryName: argocd
+      chartName: argocd/argo-cd
+      chartVersion: ${{ values.argocdchartver }}
+      releaseName: argocd
+      releaseNamespace: argocd
+      values: |
+        global:
+          domain: argocd.${{ values.clustername }}.k8s.dinova.services
+
+        redis-ha:
+          enabled: true
+
+        controller:
+          replicas: 1
+        configs:
+          cm:
+            resource.exclusions: |
+              ### Network resources created by the Kubernetes control plane and excluded to reduce the number of watched events and UI clutter
+              - apiGroups:
+                - ''
+                - discovery.k8s.io
+                kinds:
+                - Endpoints
+              ### Internal Kubernetes resources excluded reduce the number of watched events
+              - apiGroups:
+                - coordination.k8s.io
+                kinds:
+                - Lease
+              ### Internal Kubernetes Authz/Authn resources excluded reduce the number of watched events
+              - apiGroups:
+                - authentication.k8s.io
+                - authorization.k8s.io
+                kinds:
+                - SelfSubjectReview
+                - TokenReview
+                - LocalSubjectAccessReview
+                - SelfSubjectAccessReview
+                - SelfSubjectRulesReview
+                - SubjectAccessReview
+              ### Intermediate Certificate Request excluded reduce the number of watched events
+              - apiGroups:
+                - certificates.k8s.io
+                kinds:
+                - CertificateSigningRequest
+              - apiGroups:
+                - cert-manager.io
+                kinds:
+                - CertificateRequest
+              ### Cilium internal resources excluded reduce the number of watched events and UI Clutter
+              - apiGroups:
+                - cilium.io
+                kinds:
+                - CiliumIdentity
+                - CiliumEndpoint
+                - CiliumEndpointSlice
+              ### Kyverno intermediate and reporting resources excluded reduce the number of watched events and improve performance
+              - apiGroups:
+                - kyverno.io
+                - reports.kyverno.io
+                - wgpolicyk8s.io
+                kinds:
+                - PolicyReport
+                - ClusterPolicyReport
+                - EphemeralReport
+                - ClusterEphemeralReport
+                - AdmissionReport
+                - ClusterAdmissionReport
+                - BackgroundScanReport
+                - ClusterBackgroundScanReport
+                - UpdateRequest
+
+
+        server:
+          replicas: 2
+          ingress:
+            hostname: argocd.${{ values.clustername  }}.k8s.dinova.services
+            tls: true
+            enabled: true
+            ingressClassName: nginx-management
+            annotations:
+              cert-manager.io/cluster-issuer: dinova-letsencrypt
+              external-dns.alpha.kubernetes.io/target: mgmt.${{ values.clustername }}.k8s.dinova.services
+              nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+              nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+              nginx.ingress.kubernetes.io/ssl-passthrough: 'true'
+
+        repoServer:
+          replicas: 2
+
+        applicationSet:
+          replicas: 2

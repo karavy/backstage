@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}
+  annotations:
+    repoUrl: ${{ values.repoUrl }}
+  links:
+    - url: https://dashboard.example.com
+      title: My Dashboard
+      icon: dashboard
+spec:
+  type: service
+  owner: user:guest
+  lifecycle: experimental

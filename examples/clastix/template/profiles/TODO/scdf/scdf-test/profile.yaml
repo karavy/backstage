@@ -1,0 +1,119 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: scdf-test-profile
+  namespace: soris-stage
+spec:
+  dependsOn:
+    - scdf-test-dbs-profile
+  clusterSelector:
+    matchLabels:
+      scdf-test: scdf
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: oci://registry-1.docker.io/bitnamicharts
+      repositoryName: scdf
+      chartName: spring-cloud-dataflow
+      chartVersion: 37.0.4
+      releaseName: scdf
+      releaseNamespace: scdf-test
+      helmChartAction: Install
+      values: |
+        mariadb:
+          enabled: false
+
+        externalDatabase:
+          driver: org.postgresql.Driver
+          hibernateDialect: 'org.hibernate.dialect.PostgreSQLDialect'
+          host: 'postgresql-citymat-rw.postgresql.svc'
+          port: 5432
+          scheme: postgresql
+          dataflow:
+            database: dataflow-test
+            username: 'soris-scdf-test'
+            existingSecret: 'soris-scdf-test-user'
+            existingSecretPasswordKey: "password"
+          skipper:
+            database: skipper-test
+            username: 'soris-scdf-test'
+            existingSecret: 'soris-scdf-test-user'
+            existingSecretPasswordKey: "password"
+
+        rabbitmq:
+          enabled: false
+
+        externalKafka:
+          enabled: true
+          brokers: 'soris-kafka-bootstrap.kafka-test.svc:9092'
+          zkNodes: 'soris-zookeeper-client.kafka-test.svc:2181'
+
+        clusterDomain: 'soris-stage-citymat.local'
+
+        server:
+          networkPolicy:
+            extraEgress:
+              - port: 7577
+                protocol: TCP
+            enabled: false
+          extraEnvVars:
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM-POOL-SIZE
+              value: "15"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM-IDLE
+              value: "10"
+            - name: SPRING_DATASOURCE_HIKARI_IDLE-TIMEOUT
+              value: "300000"
+          ingress:
+            enabled: true
+            ingressClassName: nginx-management
+            hostname: scdf-test.soris-stage.k8s.dinova.services
+            annotations:
+              cert-manager.io/cluster-issuer: dinova-letsencrypt
+              external-dns.alpha.kubernetes.io/target: mgmt.soris-stage.k8s.dinova.services
+            tls: true
+
+        metrics:
+          resourcesPreset: "small"
+          startupProbe:
+            enabled: true
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10  
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+
+          networkPolicy:
+            enabled: false
+          enabled: true
+          serviceMonitor:
+            enabled: true
+
+        skipper:
+          networkPolicy:
+            enabled: false
+          extraEnvVars:
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM-POOL-SIZE
+              value: "10"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM-IDLE
+              value: "5"
+            - name: SPRING_DATASOURCE_HIKARI_IDLE-TIMEOUT
+              value: "300000"
+
+  policyRefs:
+    - name: scdf-test-scrapeconfigs
+      kind: ConfigMap
+    - name: scdf-test-psql-svc
+      kind: ConfigMap

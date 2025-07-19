@@ -1,0 +1,19 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: kafka-strimzi-operator
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      kafka: strimzi-operator
+  syncMode: ContinuousWithDriftDetection
+  helmCharts:
+    - repositoryURL: oci://quay.io/strimzi-helm
+      repositoryName: oci-strimzi-kafka-operator
+      chartName: strimzi-kafka-operator
+      chartVersion: 0.45.0
+      releaseName: strimzi-kafka-operator
+      releaseNamespace: kafka
+      values: |
+        watchAnyNamespace: true

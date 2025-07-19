@@ -1,0 +1,32 @@
+apiVersion: config.projectsveltos.io/v1beta1
+kind: Profile
+metadata:
+  name: cloudnative-pg-profile
+  namespace: soris-stage
+spec:
+  clusterSelector:
+    matchLabels:
+      postgres: cloudnative-pg
+  syncMode: ContinuousWithDriftDetection
+  policyRefs:
+    - name: cnpg-alerts
+      kind: ConfigMap
+  helmCharts:
+    - repositoryURL: https://cloudnative-pg.github.io/charts
+      repositoryName: cnpg
+      chartName: cnpg/cloudnative-pg
+      chartVersion: 0.24.0
+      releaseName: cloudnative-pg
+      releaseNamespace: cnpg-system
+      helmChartAction: Install
+      values: |
+        monitoring:
+          podMonitorEnabled: true
+          podMonitorAdditionalLabels: 
+            release: prometheus-stack
+          grafanaDashboard:
+            create: true
+            namespace: "prometheus-stack"
+            labels:
+              app: cloudnative-pg
+              release: prometheus-stack

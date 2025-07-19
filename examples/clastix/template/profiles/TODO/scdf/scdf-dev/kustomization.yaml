@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - profile.yaml
+  - scdf-dbs-profile.yaml
+  - secrets/db-user-secret.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: scdf-dev-dbs-profile
+    namespace: soris-stage
+    files:
+      - db.yaml
+  - name: scdf-dev-scrapeconfigs
+    namespace: soris-stage
+    files:
+      - scrapeconfigs.yaml=scrapeconfigs.yaml
+  - name: scdf-dev-psql-svc
+    namespace: soris-stage
+    files:
+      - postgres-svc.yaml=postgres-svc.yaml

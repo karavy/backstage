@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  description: Servizio Kubernetes creato da scaffolder
+  tags:
+    - kubernetes
+spec:
+  type: service
+  owner: team-devops
+  lifecycle: experimental
+
