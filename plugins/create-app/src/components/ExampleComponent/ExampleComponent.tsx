@@ -10,8 +10,15 @@ import { SummaryStep } from './steps/SummaryStep';
 import { ClusterMainInfo } from './steps/ClusterMainInfo';
 import { VSphereDcInfo } from './steps/VSphereDcInfo';
 import { NodesInfoStep} from './steps/NodesInfoStep';
+import { ProfilesStep } from './steps/ProfilesStep';
 
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
+
+const profileOptions = [
+  { profilekey: 'prod-profile-01', profilevalue: 'Profilo di Produzione (EU)' },
+  { profilekey: 'dev-profile-x', profilevalue: 'Profilo di Sviluppo (US)' },
+  { profilekey: 'staging-profile', profilevalue: 'Profilo di Staging' },
+];
 
 // Definiamo un tipo per l'intero stato del nostro form
 export interface WizardFormData {
@@ -37,6 +44,8 @@ export interface WizardFormData {
     rangeend: string;
   }[];
 
+  profilelabels: string[];
+
   nodesinfo: {
     nodename: string;
     replicas: number;
@@ -59,7 +68,7 @@ export interface WizardFormData {
   }[];
 }
 
-const steps = ['Informazioni Principali Cluster', 'Informazione vSphere Datacenter', 'Tenant Cluster IPAM', 'Definizione Nodi Tenant', 'Riepilogo'];
+const steps = ['Informazioni Principali Cluster', 'Informazione vSphere Datacenter', 'Tenant Cluster IPAM', 'Definizione Nodi Tenant', 'Profili da Abilitare', 'Riepilogo'];
 
 export const ExampleComponent = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -87,7 +96,9 @@ export const ExampleComponent = () => {
 
       ipampool: [{ ipamname: '', prefix: 26, gateway: '', rangestart: '0.0.0.0', rangeend: '0.0.0.0' }],
 
-      nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50, dcfolder: 'a', dcpool: 'b', dcstorage: 'c', dcvmtemplate: 'd', dcnetwork: 'e', nodelabels: [{ labelkey: '', labelvalue: ''}] , nodetaints: [{ taintkey: '', taintvalue: ''}]}]
+      nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50, dcfolder: 'a', dcpool: 'b', dcstorage: 'c', dcvmtemplate: 'd', dcnetwork: 'e', nodelabels: [] , nodetaints: []}],
+
+      profilelabels: []
     },
   });
 
@@ -126,7 +137,7 @@ export const ExampleComponent = () => {
 
       loadInitialData();
     } else {
-      setIsLoading(true);
+      setIsLoading(false);
     }
   }, [fetcher, entity, reset]);
 
@@ -168,7 +179,9 @@ export const ExampleComponent = () => {
       case 3:
         return <NodesInfoStep control={control} />;
       case 4:
-        return <SummaryStep formData={getValues()} />;
+        return <ProfilesStep control={control} options={profileOptions} />;
+      case 5:
+        return <SummaryStep formData={getValues()} profileOptions={profileOptions}/>;
       default:
         return 'Step Sconosciuto';
     }

@@ -62,7 +62,7 @@ spec:
         serviceDomain: ${{ values.clusterdomain }} #soris-stage-citymat.local
       controlPlane:
         # -- Labels to add to the control plane
-        labels:
+        labels: #TODO
           profile: basic
           #fortigate: fabric
           #loadbalancer: metallb
@@ -223,7 +223,7 @@ spec:
         # -- Specifies whether Secret should be created from config values
         create: false
         # -- The name of an existing Secret for vSphere.
-        name: cpi-config-secret
+        name: cpi-config-secret #TODO
       image:
         tag: ${{ values.k8sversion }} #v1.31.0
       nodeSelector:

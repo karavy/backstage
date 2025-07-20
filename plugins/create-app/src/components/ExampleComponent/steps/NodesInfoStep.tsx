@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { TextField, Button, Box, IconButton, Paper, FormControl, Grid, Typography } from '@material-ui/core';
+import { 
+  TextField, Button, Box, IconButton, Paper, FormControl, Grid, Typography,   
+  InputLabel,
+  Select,
+  MenuItem,
+
+} from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import DeleteIcon from '@material-ui/icons/Delete';
 
@@ -95,7 +101,7 @@ export const NodeTaints = ({ control, nodeIndex }: NodeTaintsProps) => {
           <Grid item xs={12}>
 	    <Controller
 	    fullWidth
-              name={`nodesinfo.${nodeIndex}.nodetaintss.${taintIndex}.taintvalue`}
+              name={`nodesinfo.${nodeIndex}.nodetaints.${taintIndex}.taintvalue`}
               control={control}
 	      defaultValue={taintItem.taintvalue}
               render={({ field }) => (
@@ -199,8 +205,17 @@ export const NodesInfoStep = ({ control }: NodesInfoStepProps) => {
               name={`nodesinfo.${index}.dcfolder`}
               control={control}
               render={({ field }) => (
-                <TextField {...field} fullWidth label="Datacenter Node Folder" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
-              )}
+                <FormControl fullWidth style={{ marginBottom: '16px' }}>
+                  <InputLabel id="dcfolder-select-label">Node VM Folder</InputLabel>
+                  <Select
+                    {...field}
+                    labelId="dcfolder-select-label"
+                    label="Node VM Folder"
+                    style={{ marginBottom: '24px' }}
+                >
+                    <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+                  </Select>
+                </FormControl>)}
             />
 	  </Grid>
           <Grid item xs={12}>

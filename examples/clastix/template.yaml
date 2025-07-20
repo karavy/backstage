@@ -235,6 +235,11 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+        newBranchName:
+          title: Nome del nuovo branch
+          type: string
+          description: Il nome per il nuovo branch (es. feature/mio-componente).
+          default: feature/nuovo-componente
 
   # here's the steps that are executed in series in the scaffolder backend
   steps:
@@ -296,5 +301,25 @@ spec:
       action: publish:github
       input:
         description: This is ${{ parameters.name }}
+
+        # URL del repository fornito dall'utente
         repoUrl: ${{ parameters.repoUrl }}
-        defaultBranch: 'main'
+
+        # Nome del branch fornito dall'utente
+        gitBranch: ${{ parameters.newBranchName }}
+
+        # Percorso del contenuto da pubblicare
+        sourcePath: ./skeleton
+
+        # Descrizione usata solo se il repository viene creato
+        description: 'Repository creato da Backstage per ${{ parameters.repoUrl.split("/").pop() }}'
+
+        # Rendi il repo pubblico o privato se viene creato
+        visibility: 'public'
+
+    - id: register          
+      name: Registra il Componente
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
