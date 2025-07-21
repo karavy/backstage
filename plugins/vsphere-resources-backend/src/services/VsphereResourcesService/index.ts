@@ -1,0 +1,1 @@
+export { getVSphereFolder } from './getVsphereFolderService';
