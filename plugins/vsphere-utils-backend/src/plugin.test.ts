@@ -2,7 +2,7 @@ import {
   mockCredentials,
   startTestBackend,
 } from '@backstage/backend-test-utils';
-import { vsphereResourcesPlugin } from './plugin';
+import { vsphereUtilsPlugin } from './plugin';
 import request from 'supertest';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
@@ -14,15 +14,15 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 describe('plugin', () => {
   it('should create and read TODO items', async () => {
     const { server } = await startTestBackend({
-      features: [vsphereResourcesPlugin],
+      features: [vsphereUtilsPlugin],
     });
 
-    await request(server).get('/api/vsphere-resources/todos').expect(200, {
+    await request(server).get('/api/vsphere-utils/todos').expect(200, {
       items: [],
     });
 
     const createRes = await request(server)
-      .post('/api/vsphere-resources/todos')
+      .post('/api/vsphere-utils/todos')
       .send({ title: 'My Todo' });
 
     expect(createRes.status).toBe(201);
@@ -36,20 +36,20 @@ describe('plugin', () => {
     const createdTodoItem = createRes.body;
 
     await request(server)
-      .get('/api/vsphere-resources/todos')
+      .get('/api/vsphere-utils/todos')
       .expect(200, {
         items: [createdTodoItem],
       });
 
     await request(server)
-      .get(`/api/vsphere-resources/todos/${createdTodoItem.id}`)
+      .get(`/api/vsphere-utils/todos/${createdTodoItem.id}`)
       .expect(200, createdTodoItem);
   });
 
   it('should create TODO item with catalog information', async () => {
     const { server } = await startTestBackend({
       features: [
-        vsphereResourcesPlugin,
+        vsphereUtilsPlugin,
         catalogServiceMock.factory({
           entities: [
             {
@@ -71,7 +71,7 @@ describe('plugin', () => {
     });
 
     const createRes = await request(server)
-      .post('/api/vsphere-resources/todos')
+      .post('/api/vsphere-utils/todos')
       .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
 
     expect(createRes.status).toBe(201);

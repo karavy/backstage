@@ -4,15 +4,15 @@ import {
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { getVSphereFolder } from './services/VsphereResourcesService';
+import { createTodoListService } from './services/TodoListService';
 
 /**
- * vsphereResourcesPlugin backend plugin
+ * vsphereUtilsPlugin backend plugin
  *
  * @public
  */
-export const vsphereResourcesPlugin = createBackendPlugin({
-  pluginId: 'vsphere-resources',
+export const vsphereUtilsPlugin = createBackendPlugin({
+  pluginId: 'vsphere-utils',
   register(env) {
     env.registerInit({
       deps: {
@@ -22,7 +22,7 @@ export const vsphereResourcesPlugin = createBackendPlugin({
         catalog: catalogServiceRef,
       },
       async init({ logger, httpAuth, httpRouter, catalog }) {
-        const getVSphereFolder = await getVSphereFolder({
+        const todoListService = await createTodoListService({
           logger,
           catalog,
         });
@@ -30,7 +30,7 @@ export const vsphereResourcesPlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             httpAuth,
-            getVsphereFolder,
+            todoListService,
           }),
         );
       },

@@ -5,12 +5,6 @@ import express from 'express';
 import Router from 'express-promise-router';
 import { TodoListService } from './services/TodoListService/types';
 
-import express from 'express';
-import simpleGit from 'simple-git';
-import fs from 'fs/promises';
-import yaml from 'yaml';
-import path from 'path';
-
 export async function createRouter({
   httpAuth,
   todoListService,
@@ -45,14 +39,21 @@ export async function createRouter({
     res.status(201).json(result);
   });
 
-  router.get('/todos', async (_req, res) => {
-    res.json(await todoListService.listTodos());
+  router.get('/resourcepool/:filter', async (req, res) => {
+    res.json(await todoListService.getResourcePools(req.params.filter));
   });
 
-  router.get('/todos/:id', async (req, res) => {
-    res.json(await todoListService.getTodo({ id: req.params.id }));
+  router.get('/datacenter', async (req, res) => {
+    res.json(await todoListService.getDatacenters({ id: req.params.id }));
+  });
+
+  router.get('/storagepolicies', async (req, res) => {
+    res.json(await todoListService.getStoragePolicies());
+  });
+
+  router.get('/networks/:filter', async (req, res) => {
+    res.json(await todoListService.getNetworks(req.params.filter));
   });
 
   return router;
 }
-

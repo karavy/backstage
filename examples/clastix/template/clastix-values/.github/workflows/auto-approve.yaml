@@ -1,0 +1,21 @@
+name: Auto Approve
+
+# Trigger: si attiva quando una PR viene aperta
+on:
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  auto-approve:
+    # Esegue l'azione solo se l'autore della PR è 'dependabot[bot]'
+    #if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # Permesso necessario per scrivere sulla PR
+    steps:
+      - name: Auto Approve Dependabot PRs
+        uses: hmarr/auto-approve-action@v4
+        with:
+          # Il token per autenticare l'azione.
+          # Per la maggior parte dei casi basta il token di default.
+          github-token: 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

@@ -1,6 +1,6 @@
 /***/
 /**
- * The cnpgprovision module for @backstage/plugin-scaffolder-backend.
+ * The gitrepomanage module for @backstage/plugin-scaffolder-backend.
  *
  * @packageDocumentation
  */

@@ -23,5 +23,5 @@ export interface TodoListService {
 
   listTodos(): Promise<{ items: TodoItem[] }>;
 
-  getTodo(request: { id: string }): Promise<TodoItem>;
+  getDatacenters(request: { id: string }): Promise<TodoItem>;
 }
