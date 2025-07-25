@@ -41,6 +41,20 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
       />
 
       <Controller
+        name="gatewayip"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Internal Cluster API Server IP"
+            variant="outlined"
+            fullWidth
+            style={{ marginBottom: '24px' }}
+          />
+        )}
+      />
+
+      <Controller
         name="clusterdomain"
         control={control}
         render={({ field }) => (

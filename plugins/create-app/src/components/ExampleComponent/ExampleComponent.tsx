@@ -29,6 +29,7 @@ export interface WizardFormData {
   cpreplicas: number;
   datastore: string;
   k8sversion: string;
+  gatewayip: string
 
   // secondo step
   dcname: string;
@@ -88,6 +89,7 @@ export const ExampleComponent = () => {
       cpreplicas: 3,
       datastore: '',
       k8sversion: '',
+      gatewayip: '',
 
       dcname: '',
       dcurl: '',

@@ -30,10 +30,6 @@ spec:
         type: VSphereClusterIdentity
         # -- Specifies the name of the VSphereClusterIdentity or Secret
         name: ${{ values.dccredsecret }} #vsphere-cluster-identity
-      # -- VSphere username
-      # username: "username"
-      # -- VSphere password
-      # password: "password"
 
     ipamProvider:
       # -- Enable the IPAMProvider usage
@@ -46,9 +42,9 @@ spec:
       name: ${{ values.pampoolname }} #ipam-ip-pool
       # -- IPAMProvider ranges
       ranges:
-{% for ranges in values.ipampoolranges %}
+{%- for ranges in values.ipampoolranges %}
         - ${{ ranges.rangestart }}-${{ ranges.rangeend }}
-{% endfor %}
+{% endfor -%}
         #- "10.10.119.51-10.10.119.150"
       # -- IPAMProvider prefix
       prefix: ${{ values.ipamrangeprefix }} #"24"
@@ -120,7 +116,7 @@ spec:
           # -- List of additional Subject Alternative Names to use for the API Server serving certificate
           serviceAnnotations:
             metallb.io/loadBalancerIPs: ${{ values.apiserverip }} #"10.19.27.61"
-          certSANs: [ "soris-stage.k8s.dinova.services", "10.10.119.254" ] #TODO
+          certSANs: [ "${{ values.clustername }}.k8s.dinova.services", "${{ values.gatewayip }}" ] #TODO
         # -- Kubernetes version
         version: ${{ values.k8sversion }} #v1.31.0
         deployment:
@@ -141,7 +137,7 @@ spec:
           namespace: monitoring-system
 
     nodePools:
-{% for ninfo in values.nodeinfo %}
+{%- for ninfo in values.nodeinfo %}
       # Node Pool configuration
       - name: ${{ ninfo.nodename }}
         additionalCloudInitFiles: |
@@ -153,28 +149,28 @@ spec:
         #dataStore: "SANEDAE1090-001_LUN58"
         #dataStore: ""
         # -- VSphere folder to store VMs
-        folder: ${{ ninfo.dcnodefolder }} #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        folder: "${{ ninfo.dcnodefolder }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
         # -- VSphere resource pool to use
-        resourcePool: ${{ ninfo.dcnodepool }} #"/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        resourcePool: "${{ ninfo.dcnodepool }}" #"/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
         # -- VSphere storage policy to use
-        storagePolicyName: ${{ ninfo.dcnodestoragepolicy }} #"DATA4_ENT-PLUS_K8S"
+        storagePolicyName: "${{ ninfo.dcnodestoragepolicy }}" #"DATA4_ENT-PLUS_K8S"
         # -- VSphere template to clone
         #template: "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/ELOGIC/Developement CAPI/ubuntu-2204-kube-v1.30.0"
-        template: ${{ ninfo.dcnodevmtemplate }} #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
+        template: "${{ ninfo.dcnodevmtemplate }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
         # -- VSphere network for VMs and CSI
-        network: ${{ ninfo.dcnodenetwork }} #"/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
+        network: "${{ ninfo.dcnodenetwork }}" #"/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
         # -- Number of worker VMs instances
         replicas: ${{ ninfo.replicas  }}
         # -- Taints to add to the node pool when joining the cluster
         taints: 
-  {%- for taint in ninfo.taints -%}
+  {%- for taint in ninfo.taints %}
           ${{ taint.key }}: ${{ taint.value }}
-  {%- endfor -%}
+  {% endfor %}
         # -- Labels to add to the node pool when joining the cluster
         labels: 
-  {%- for label in ninfo.labels -%}
+  {%- for label in ninfo.labels %}
           ${{ label.key }}: ${{ label.value }}
-  {%- endfor -%}
+  {%- endfor %}
         # -- Disk size of VM in GiB
         diskGiB: ${{ ninfo.disk }}
         # -- Memory to allocate to worker VMs
@@ -186,8 +182,8 @@ spec:
         # -- Use an IPAMProvider pool to reserve IPs
         # -- Static network routes if required
         staticRoutes:
-          - to: 10.19.27.61
-            via: 10.10.119.254
+          - to:  ${{ values.apiserverip }}
+            via: ${{ values.gatewayip }}
         addressesFromPools:
           # -- Enable the IPAMProvider usage
           enabled: true
@@ -215,7 +211,6 @@ spec:
           minSize: "2"
           maxSize: "6"
 {% endfor %}
-
     vSphereCloudControllerManager:
       # -- Installs vsphere-cloud-controller-manager on the management cluster
       enabled: true

@@ -11,43 +11,49 @@ spec:
 
   # these are the steps which are rendered in the frontend with the form input
   parameters:
-    - title: Cluster Base Information
-      required:
-        - apiserverip
-        - clustername
-        - clusterdomain
-        - cpreplicas
-        - datastore
-        - k8sversion
-      properties:
-        apiserverip:
-          title: Tenant API ip
-          type: string
-          description: Tenant Cluster Api Server IP
-          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-        clustername:
-          title: Name
-          type: string
-          description: Cluster Unique Identifier (eg soris-stage)
-        clusterdomain:
-          title: Tenant Cluster Domain
-          type: string
-          description: Unique name of the component
-        cpreplicas:
-          title: Tenant Cluster Controlplane replicas
-          type: integer
-          description: Unique name of the component
-          pattern: '^(3|5|7)$'
-        datastore:
-          title: Etcd Datastore
-          type: string
-          description: Unique name of the component
-        k8sversion:
-          title: Kubernetes Version
-          type: string
-          description: Unique name of the component
-          pattern: '^1.(30|31|32)$'
-
+#    - title: Cluster Base Information
+#      required:
+#        - apiserverip
+#        - clustername
+#        - clusterdomain
+#        - cpreplicas
+#        - datastore
+#        - k8sversion
+#        - gatewayip
+#      properties:
+#        gatewayip:
+#          title: Cluster Node API server NAT
+#          type: string
+#          description: Cluster Node API server NAT
+#          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+#        apiserverip:
+#          title: Tenant API ip
+#          type: string
+#          description: Tenant Cluster Api Server IP
+#          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+#        clustername:
+#          title: Name
+#          type: string
+#          description: Cluster Unique Identifier (eg soris-stage)
+#        clusterdomain:
+#          title: Tenant Cluster Domain
+#          type: string
+#          description: Unique name of the component
+#        cpreplicas:
+#          title: Tenant Cluster Controlplane replicas
+#          type: integer
+#          description: Unique name of the component
+#          pattern: '^(3|5|7)$'
+#        datastore:
+#          title: Etcd Datastore
+#          type: string
+#          description: Unique name of the component
+#        k8sversion:
+#          title: Kubernetes Version
+#          type: string
+#          description: Unique name of the component
+#          pattern: '^1.(30|31|32)$'
+#
 #    - title: vSphere vcenter connection
 #      required:
 #        - dcname
@@ -119,94 +125,94 @@ spec:
 #                type: string
 #                title: Range Last Address
 #                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-#
-#    - title: Get Nodes Info
-#      required:
-#        - nodeinfo
-#      properties:
-#        nodeinfo:
-#          title: Node Types and Info
-#          type: array
-#          description: Required storage for db
-#          items:
-#            type: object
-#            required: [nodename, replicas, cpu, ram, disk, dcnodefolder, dcnodepool, dcnodestoragepolicy, dcnodevmtemplate, dcnodenetwork]
-#            properties:
-#              nodename:
-#                type: string
-#                title: Name
-#              replicas:
-#                type: integer
-#                title: Repliche
-#              cpu:
-#                type: integer
-#                title: Numero CPU
-#              ram:
-#                type: integer
-#                title: Memory in MiB
-#              disk:
-#                type: integer
-#                title: Disk Size
-#              dcnodefolder:
-#                title: Datacenter Node Folder
-#                type: string
-#                description: Scegli la folder di destinazione del nodo
-#                enum:
-#                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-#                ui:widget: select
-#              dcnodepool:
-#                title: Datacenter Node Resource Pool
-#                type: string
-#                description: Scegli il pool di destinazione del nodo
-#                enum:
-#                  - "/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-#                ui:widget: select
-#              dcnodestoragepolicy:
-#                title: Datacenter Node Storage Policy
-#                type: string
-#                description: Scegli la storage policy di destinazione del nodo
-#                enum:
-#                  - "DATA4_ENT-PLUS_K8S"
-#                ui:widget: select
-#              dcnodevmtemplate:
-#                title: Datacenter Node VM Template
-#                type: string
-#                description: Scegli il template per la vm del nodo
-#                enum:
-#                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
-#                ui:widget: select
-#              dcnodenetwork:
-#                title: Datacenter Node Network
-#                type: string
-#                description: Scegli la network per la vm del nodo
-#                enum:
-#                  - "/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
-#                ui:widget: select
-#              labels:
-#                type: array
-#                items:
-#                  type: object
-#                  required: [key, value]
-#                  properties:
-#                    key:
-#                      type: string
-#                      title: Key
-#                    value:
-#                      type: string
-#                      title: Value
-#                title: Nodes labels
-#              taints:
-#                type: array
-#                items:
-#                  type: object
-#                  required: [key, value]
-#                  properties:
-#                    key:
-#                      type: string
-#                      title: Key
-#                    value:
-#                      type: string
-#                      title: Value
+
+    - title: Get Nodes Info
+      required:
+        - nodeinfo
+      properties:
+        nodeinfo:
+          title: Node Types and Info
+          type: array
+          description: Required storage for db
+          items:
+            type: object
+            required: [nodename, replicas, cpu, ram, disk, dcnodefolder, dcnodepool, dcnodestoragepolicy, dcnodevmtemplate, dcnodenetwork]
+            properties:
+              nodename:
+                type: string
+                title: Name
+              replicas:
+                type: integer
+                title: Repliche
+              cpu:
+                type: integer
+                title: Numero CPU
+              ram:
+                type: integer
+                title: Memory in MiB
+              disk:
+                type: integer
+                title: Disk Size
+              dcnodefolder:
+                title: Datacenter Node Folder
+                type: string
+                description: Scegli la folder di destinazione del nodo
+                enum:
+                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+                ui:widget: select
+              dcnodepool:
+                title: Datacenter Node Resource Pool
+                type: string
+                description: Scegli il pool di destinazione del nodo
+                enum:
+                  - "/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+                ui:widget: select
+              dcnodestoragepolicy:
+                title: Datacenter Node Storage Policy
+                type: string
+                description: Scegli la storage policy di destinazione del nodo
+                enum:
+                  - "DATA4_ENT-PLUS_K8S"
+                ui:widget: select
+              dcnodevmtemplate:
+                title: Datacenter Node VM Template
+                type: string
+                description: Scegli il template per la vm del nodo
+                enum:
+                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
+                ui:widget: select
+              dcnodenetwork:
+                title: Datacenter Node Network
+                type: string
+                description: Scegli la network per la vm del nodo
+                enum:
+                  - "/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
+                ui:widget: select
+              labels:
+                type: array
+                items:
+                  type: object
+                  required: [key, value]
+                  properties:
+                    key:
+                      type: string
+                      title: Key
+                    value:
+                      type: string
+                      title: Value
+                title: Nodes labels
+              taints:
+                type: array
+                items:
+                  type: object
+                  required: [key, value]
+                  properties:
+                    key:
+                      type: string
+                      title: Key
+                    value:
+                      type: string
+                      title: Value
 
 #    - title: Select Sveltos Apps
 #      required:
@@ -273,6 +279,7 @@ spec:
         targetPath: ./output
         values:
           apiserverip: ${{ parameters.apiserverip }}
+          gatewayip: ${{ parameters.gatewayip }}
           clustername: ${{ parameters.clustername }}
           clusterdomain: ${{ parameters.clusterdomain }}
           cpreplicas: ${{ parameters.cpreplicas }}
