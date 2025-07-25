@@ -56,4 +56,5 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(import('@internal/plugin-get-git-catalog-backend'));
 backend.add(import('@internal/plugin-vsphere-utils-backend'));
 backend.add(import('@internal/plugin-scaffolder-backend-module-gitrepomanage'));
+
 backend.start();

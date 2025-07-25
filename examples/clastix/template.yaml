@@ -227,6 +227,7 @@ spec:
     - title: Choose a location
       required:
         - repoUrl
+        - newTagName
       properties:
         repoUrl:
           title: Repository Location
@@ -235,11 +236,10 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
-        newBranchName:
-          title: Nome del nuovo branch
+        newTagName:
+          title: Nome del nuovo tag
           type: string
           description: Il nome per il nuovo branch (es. feature/mio-componente).
-          default: feature/nuovo-componente
 
   steps:
 #    - id: save-metadata
@@ -293,11 +293,10 @@ spec:
       action: github:createmerge
       input:
         repoUrl: ${{ parameters.repoUrl }}
-        tagName: '1.2'
+        tagName: ${{ parameters.newTagName }}
         title: 'feat: Aggiornamento dal template Backstage'
         description: 'Questa PR contiene gli aggiornamenti generati dal template.'
         sourcePath: ./repo-esistente
-        token: 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
         commitMessage: 'pippo'
 #
 #    - id: register          

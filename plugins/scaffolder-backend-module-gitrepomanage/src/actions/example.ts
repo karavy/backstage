@@ -1,32 +1,29 @@
-import { createTemplateAction, runCommand } from '@backstage/plugin-scaffolder-node';
+import { createTemplateAction, runCommand, parseRepoUrl } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
-import { ScmIntegrations } from '@backstage/integration';
+import { 
+  ScmIntegrations,   
+  ScmIntegrationRegistry,
+} from '@backstage/integration';
 import { Octokit } from 'octokit';
 import path from 'path';
+import { scmIntegrations } from '@backstage/integration';
+import { getOctokitOptions } from './utils';
+import simpleGit from "simple-git";
+import fs from 'node:fs';
 
-// Funzione helper per estrarre owner e repo dall'URL
-const parseRepoUrl = (repoUrl: string) => {
-  const { owner, repo } = ScmIntegrations.fromConfig(new Map()).github.parseUrl(repoUrl);
-  if (!owner || !repo) {
-    throw new Error('Impossibile analizzare owner e repo URL.');
-  }
-  return { owner, repo };
-};
-
-export const createExampleAction = () => {
+export const createExampleAction = (options: {
+  integrations: ScmIntegrationRegistry;
+  githubCredentialsProvider?: GithubCredentialsProvider;
+}) => {
   return createTemplateAction({
     id: 'github:createmerge',
     description: 'Runs an example action',
     schema: {
-      input: {
+      input: z.object({
         repoUrl: z =>
 	  z.string({ 
             description: 'URL del repository GitHub' 
         }),
-        token: z => 
-	  z.string({ 
-            description: 'Token di autenticazione GitHub' 
-	}),
         sourcePath: z => 
 	  z.string({ 
             description: 'Percorso dei file sorgente da copiare' 
@@ -39,14 +36,28 @@ export const createExampleAction = () => {
 	  z.string({ 
 	    description: 'Tag da applicare in caso di aggiornamento' 
 	}).optional(),
-      },
+      }),
     },
 
     async handler(ctx) {
-      const { repoUrl, token, sourcePath, commitMessage, tagName } = ctx.input;
-      const { owner, repo } = parseRepoUrl(repoUrl);
+      const { repoUrl, sourcePath, commitMessage, tagName } = ctx.input;
+      const { integrations, githubCredentialsProvider } = options;
+      const { host, owner, repo } = parseRepoUrl(repoUrl, integrations);
+      const token = githubCredentialsProvider.providers.get('github.com').token;
 
-      const octokit = new Octokit({ auth: token });
+      const octokitOptions = await getOctokitOptions({
+        integrations,
+        credentialsProvider: githubCredentialsProvider,
+        auth: token,
+        host,
+        owner,
+        repo,
+      });
+
+
+      const octokit = new Octokit({ 
+	...octokitOptions
+      });
 
       let repoExists = false;
       try {
@@ -58,60 +69,48 @@ export const createExampleAction = () => {
         }
       }
 
-      const sourceDir = path.resolve(ctx.templateInfo.baseUrl, sourcePath);
+      const localPath = ctx.workspacePath + "/" + repo
+      const git = simpleGit();
 
-      if (repoExists) {
-        // --- FLUSSO 2: IL REPO ESISTE GIÀ ---
-        ctx.log.info(`Il repository ${owner}/${repo} esiste. Avvio procedura di aggiornamento...`);
-
-        // Clona, applica modifiche, committa, pusha e tagga
-        await runCommand({
-          command: 'git',
-          args: ['clone', `https://x-access-token:${token}@github.com/${owner}/${repo}.git`, '.'],
-          options: { cwd: ctx.workspacePath },
-        });
-
-        await runCommand({ command: 'cp', args: ['-a', `${sourceDir}/.`, '.'], options: { cwd: ctx.workspacePath }});
-
-        await runCommand({ command: 'git', args: ['config', 'user.name', 'Backstage Bot'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['config', 'user.email', 'bot@example.com'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['add', '.'], options: { cwd: ctx.workspacePath }});
-
-        // Fa il commit solo se ci sono modifiche
-        const diff = await runCommand({ command: 'git', args: ['status', '--porcelain']});
-        if (diff.stdout.trim() !== '') {
-          await runCommand({ command: 'git', args: ['commit', '-m', commitMessage], options: { cwd: ctx.workspacePath }});
-          await runCommand({ command: 'git', args: ['push'], options: { cwd: ctx.workspacePath }});
-          ctx.log.info('Modifiche inviate con successo.');
-
-          if (tagName) {
-            await runCommand({ command: 'git', args: ['tag', tagName], options: { cwd: ctx.workspacePath }});
-            await runCommand({ command: 'git', args: ['push', 'origin', tagName], options: { cwd: ctx.workspacePath }});
-            ctx.log.info(`Tag ${tagName} creato e inviato.`);
-          }
-        } else {
-            ctx.log.info('Nessuna modifica da inviare.');
-        }
-
-      } else {
+      if (!repoExists) {
         // --- FLUSSO 1: IL REPO NON ESISTE ---
-        ctx.log.info(`Il repository ${owner}/${repo} non esiste. Verrà creato...`);
+        console.log(`Il repository ${owner}/${repo} non esiste. Verrà creato...`);
+	const response = await octokit.rest.repos.createForAuthenticatedUser({
+          name: "deleteme",
+          description: "My first repository created with Octokit!",
+          private: false, // Set to true for a private repository
+        });
+      }
 
-        // Crea il repo
-        await octokit.rest.repos.createForAuthenticatedUser({ name: repo, private: false });
-        ctx.log.info('Repository creato su GitHub.');
+      // Clona, applica modifiche, committa, pusha e tagga
+      try {
+        console.log(`Clonando ${repoUrl} in ${ctx.workspacePath}...`);
+        await git.clone("https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git", localPath);
+        console.log("✅ Repository clonato con successo!");
+      } catch (error) {
+        console.error(`❌ Errore durante il clone: ${error.message}`);
+        throw error
+      }
 
-        // Copia i file e pubblica
-        await runCommand({ command: 'cp', args: ['-a', `${sourceDir}/.`, '.'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['init'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['add', '.'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['config', 'user.name', 'Backstage Bot'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['config', 'user.email', 'bot@example.com'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['commit', '-m', 'Initial commit'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['branch', '-M', 'main'], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['remote', 'add', 'origin', `https://x-access-token:${token}@github.com/${owner}/${repo}.git`], options: { cwd: ctx.workspacePath }});
-        await runCommand({ command: 'git', args: ['push', '-u', 'origin', 'main'], options: { cwd: ctx.workspacePath }});
-        ctx.log.info('Contenuto iniziale pubblicato.');
+      try {
+        fs.cpSync(ctx.workspacePath + "/output", localPath, { recursive: true })
+	console.log("files copied");
+      } catch (error) {
+        console.error(`❌ Errore durante la copia: ${error.message}`);
+	throw error
+      }
+
+      try {
+        console.log(localPath)
+        await git.cwd(localPath)
+          .add('.')
+          .commit('new commit')
+          .addAnnotatedTag(tagName, 'tag message')
+          .push('origin', 'main')
+          .pushTags('origin');
+      } catch (error) {
+        console.log ('Error pushing: ' + error)
+	throw error
       }
     },
   });
