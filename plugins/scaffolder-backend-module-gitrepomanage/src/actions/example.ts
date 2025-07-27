@@ -54,7 +54,6 @@ export const createExampleAction = (options: {
         repo,
       });
 
-
       const octokit = new Octokit({ 
 	...octokitOptions
       });

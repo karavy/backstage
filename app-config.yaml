@@ -78,7 +78,8 @@ auth:
             # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers
             - resolver: usernameMatchingUserEntityName
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest: 
+      development: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

@@ -20,8 +20,4 @@ export interface TodoListService {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
     },
   ): Promise<TodoItem>;
-
-  listTodos(): Promise<{ items: TodoItem[] }>;
-
-  getTodo(request: { id: string }): Promise<TodoItem>;
 }

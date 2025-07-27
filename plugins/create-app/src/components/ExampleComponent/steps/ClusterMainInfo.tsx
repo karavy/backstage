@@ -26,7 +26,21 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
       </Typography>
 
       {/* 3. Ogni TextField è ora avvolto da un Controller */}
-      <Controller
+     <Controller
+        name="contract"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Nome del Contratto"
+            variant="outlined"
+            fullWidth
+            style={{ marginBottom: '24px' }}
+          />
+        )}
+     />
+
+     <Controller
         name="clustername"
         control={control}
         render={({ field }) => (
@@ -38,7 +52,7 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
             style={{ marginBottom: '24px' }}
           />
         )}
-      />
+     />
 
       <Controller
         name="gatewayip"

@@ -200,60 +200,6 @@ export const NodesInfoStep = ({ control }: NodesInfoStepProps) => {
               )}
             />
 	  </Grid>
-          <Grid item xs={12}>
-            <Controller
-              name={`nodesinfo.${index}.dcfolder`}
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth style={{ marginBottom: '16px' }}>
-                  <InputLabel id="dcfolder-select-label">Node VM Folder</InputLabel>
-                  <Select
-                    {...field}
-                    labelId="dcfolder-select-label"
-                    label="Node VM Folder"
-                    style={{ marginBottom: '24px' }}
-                >
-                    <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
-                  </Select>
-                </FormControl>)}
-            />
-	  </Grid>
-          <Grid item xs={12}>
-            <Controller
-              name={`nodesinfo.${index}.dcpool`}
-              control={control}
-              render={({ field }) => (
-                <TextField {...field} fullWidth label="Datacenter Node Pool" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
-              )}
-            />
-	  </Grid>
-          <Grid item xs={12}>
-            <Controller
-              name={`nodesinfo.${index}.dcstorage`}
-              control={control}
-              render={({ field }) => (
-                <TextField {...field}  fullWidth label="Datacenter Node Storage" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
-              )}
-            />
-	  </Grid>
-          <Grid item xs={12}>
-            <Controller
-              name={`nodesinfo.${index}.dcvmtemplate`}
-              control={control}
-              render={({ field }) => (
-                <TextField {...field}  fullWidth label="Datacenter Node VM Template" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
-              )}
-            />
-	  </Grid>
-          <Grid item xs={12}>
-            <Controller
-              name={`nodesinfo.${index}.dcnetwork`}
-              control={control}
-              render={({ field }) => (
-                <TextField {...field}  fullWidth label="Datacenter Node Network" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
-              )}
-            />
-	  </Grid>
           <Grid item xs={6}>
 	    <NodeLabels control={control} nodeIndex={index} />
 	  </Grid>

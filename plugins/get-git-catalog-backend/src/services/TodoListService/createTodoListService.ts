@@ -1,92 +1,94 @@
+import { parseRepoUrl } from '@backstage/plugin-scaffolder-node';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import crypto from 'node:crypto';
 import { TodoItem, TodoListService } from './types';
+import {
+  DefaultGithubCredentialsProvider,
+  ScmIntegrations,
+} from '@backstage/integration';
+import path from 'path';
+import simpleGit from 'simple-git';
+import fs from 'fs/promises';
+import yaml from 'yaml';
+import { Octokit } from 'octokit';
 
 // TEMPLATE NOTE:
 // This is a simple in-memory todo list store. It is recommended to use a
 // database to store data in a real application. See the database service
 // documentation for more information on how to do this:
 // https://backstage.io/docs/backend-system/core-services/database
+
+
 export async function createTodoListService({
   logger,
   catalog,
+  integrations,
+  githubCredentialsProvider,
+  config
 }: {
   logger: LoggerService;
-  catalog: typeof catalogServiceRef.T;
+  catalog: typeof catalogServiceRef.T;  
+  integrations: ScmIntegrationRegistry;
+  githubCredentialsProvider?: GithubCredentialsProvider;
 }): Promise<TodoListService> {
   logger.info('Initializing TodoListService');
 
   const storedTodos = new Array<TodoItem>();
+  const git = simpleGit();
+  const token = githubCredentialsProvider.providers.get('github.com').token;
+
+
+  async function repoExists (host: string, owner: string, repo: string) {
+    //const { host, owner, repo } = parseRepoUrl(repoUrl, integrations);
+
+    const octokit = new Octokit({
+      integrations,
+      credentialsProvider: githubCredentialsProvider,
+      auth: token,
+      host,
+      owner,
+      repo,
+    });
+  
+    let repoExists = false;
+    try {
+      await octokit.rest.repos.get({ owner, repo });
+      repoExists = true;
+    } catch (e) {
+      if (e.status !== 404) {
+        throw e;
+      }
+    }
+
+    return true;
+  };
 
   return {
-    async createTodo(input, options) {
-      let title = input.title;
+    async createTodo(req, res) {
+      const tmpDir = path.join('/tmp/', Date.now().toString());
 
-      // TEMPLATE NOTE:
-      // A common pattern for Backstage plugins is to pass an entity reference
-      // from the frontend to then fetch the entire entity from the catalog in the
-      // backend plugin.
-      if (input.entityRef) {
-        // TEMPLATE NOTE:
-        // Cross-plugin communication uses service-to-service authentication. The
-        // `AuthService` lets you generate a token that is valid for communication
-        // with the target plugin only. You must also provide credentials for the
-        // identity that you are making the request on behalf of.
-        //
-        // If you want to make a request using the plugin backend's own identity,
-        // you can access it via the `auth.getOwnServiceCredentials()` method.
-        // Beware that this bypasses any user permission checks.
-        const entity = await catalog.getEntityByRef(input.entityRef, options);
-        if (!entity) {
-          throw new NotFoundError(
-            `No entity found for ref '${input.entityRef}'`,
-          );
+      const host = "github.com";
+      const owner = req.params.owner;
+      const repo = req.params.repo
+
+      try {
+	if (repoExists("github.com", owner, repo)) {
+  	  try {
+            await git.clone("https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git", tmpDir); //, ["--branch", "1.6"]);
+            console.log("✅ Repository clonato con successo!");
+            const content = await fs.readFile(path.join(tmpDir, 'params.yaml'), 'utf-8');
+            const parsed = yaml.parse(content);
+            res.json(parsed);
+          } catch (error) {
+            console.error(`❌ Errore durante il clone: ${error.message}`);
+            throw error
+          }
         }
-
-        // TEMPLATE NOTE:
-        // Here you could read any form of data from the entity. A common use case
-        // is to read the value of a custom annotation for your plugin. You can
-        // read more about how to add custom annotations here:
-        // https://backstage.io/docs/features/software-catalog/extending-the-model#adding-a-new-annotation
-        //
-        // In this example we just use the entity title to decorate the todo item.
-
-        const entityDisplay = entity.metadata.title ?? input.entityRef;
-        title = `[${entityDisplay}] ${input.title}`;
+      } catch (e) {
+        res.status(500).json({ error: e.message });
       }
-
-      const id = crypto.randomUUID();
-      const createdBy = options.credentials.principal.userEntityRef;
-      const newTodo = {
-        title,
-        id,
-        createdBy,
-        createdAt: new Date().toISOString(),
-      };
-
-      storedTodos.push(newTodo);
-
-      // TEMPLATE NOTE:
-      // The second argument of the logger methods can be used to pass
-      // structured metadata. You can read more about the logger service here:
-      // https://backstage.io/docs/backend-system/core-services/logger
-      logger.info('Created new todo item', { id, title, createdBy });
-
-      return newTodo;
-    },
-
-    async listTodos() {
-      return { items: Array.from(storedTodos) };
-    },
-
-    async getTodo(request: { id: string }) {
-      const todo = storedTodos.find(item => item.id === request.id);
-      if (!todo) {
-        throw new NotFoundError(`No todo found with id '${request.id}'`);
-      }
-      return todo;
     },
   };
 }

@@ -11,120 +11,165 @@ spec:
 
   # these are the steps which are rendered in the frontend with the form input
   parameters:
-#    - title: Cluster Base Information
-#      required:
-#        - apiserverip
-#        - clustername
-#        - clusterdomain
-#        - cpreplicas
-#        - datastore
-#        - k8sversion
-#        - gatewayip
-#      properties:
-#        gatewayip:
-#          title: Cluster Node API server NAT
-#          type: string
-#          description: Cluster Node API server NAT
-#          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-#        apiserverip:
-#          title: Tenant API ip
-#          type: string
-#          description: Tenant Cluster Api Server IP
-#          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-#        clustername:
-#          title: Name
-#          type: string
-#          description: Cluster Unique Identifier (eg soris-stage)
-#        clusterdomain:
-#          title: Tenant Cluster Domain
-#          type: string
-#          description: Unique name of the component
-#        cpreplicas:
-#          title: Tenant Cluster Controlplane replicas
-#          type: integer
-#          description: Unique name of the component
-#          pattern: '^(3|5|7)$'
-#        datastore:
-#          title: Etcd Datastore
-#          type: string
-#          description: Unique name of the component
-#        k8sversion:
-#          title: Kubernetes Version
-#          type: string
-#          description: Unique name of the component
-#          pattern: '^1.(30|31|32)$'
-#
-#    - title: vSphere vcenter connection
-#      required:
-#        - dcname
-#        - dcurl
-#        - dcthumbprint
-#        - dccredsecret
-#      properties:
-#        dcname:
-#          title: Datacenter Name
-#          type: string
-#          description: Scegli l'ambiente di deploy
-#          enum:
-#            - "EDA - Datacenter Elogic A - Produzione"
-#          ui:widget: select
-#        dcurl:
-#          title: Datacenter URL
-#          type: string
-#          description: Scegli l'ambiente di deploy
-#          enum:
-#            - "10.19.6.1"
-#          ui:widget: select
-#        dcthumbprint:
-#          title: Datacenter Thumbprint
-#          type: string
-#          description: Scegli l'ambiente di deploy
-#          enum:
-#            - "2D:91:19:B3:27:30:02:CE:C0:38:CF:77:EF:1B:E6:A8:4B:9C:BB:D6:C5:59:DD:6B:6C:DF:F2:65:83:24:C1:96"
-#        dccredsecret:
-#          title: Datacenter Credential Secret
-#          type: string
-#          description: Scegli l'ambiente di deploy
-#          enum:
-#            - "vsphere-cluster-identity"
-#
-#    - title: Get IPAM info
-#      required:
-#        - ipampoolname
-#        - ipampoolrange
-#        - ipamrangeprefix
-#        - ipamrangegw
-#      properties:
-#        ipampoolname:
-#          title: Name
-#          type: string
-#          description: IPAM Provider Name
-#        ipamrangeprefix:
-#          title: Prefix
-#          type: integer
-#          description: IPAM Provier Prefix
-#        ipamrangegw:
-#          title: Gateway
-#          type: string
-#          description: IPAM Provider Gateway
-#          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-#        ipampoolrange:
-#          # range è una lista, posso avere range su reti diverse? Se sì, come specifico i gw?
-#          title: IPAM ranges
-#          type: array
-#          description: Required storage for db
-#          items:
-#            type: object
-#            required: [rangestart, rangeend]
-#            properties:
-#              rangestart:
-#                type: string
-#                title: Range First Address
-#                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-#              rangeend:
-#                type: string
-#                title: Range Last Address
-#                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+    - title: Cluster Base Information
+      required:
+        - contract
+        - apiserverip
+        - clustername
+        - clusterdomain
+        - cpreplicas
+        - datastore
+        - k8sversion
+        - gatewayip
+      properties:
+        contract:
+          title: Nome del contratto
+          type: string
+          description: Nome del Contratto Cliente
+        gatewayip:
+          title: Cluster Node API server NAT
+          type: string
+          description: Cluster Node API server NAT
+          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+        apiserverip:
+          title: Tenant API ip
+          type: string
+          description: Tenant Cluster Api Server IP
+          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+        clustername:
+          title: Name
+          type: string
+          description: Cluster Unique Identifier (eg soris-stage)
+        clusterdomain:
+          title: Tenant Cluster Domain
+          type: string
+          description: Unique name of the component
+        cpreplicas:
+          title: Tenant Cluster Controlplane replicas
+          type: integer
+          description: Unique name of the component
+          pattern: '^(3|5|7)$'
+        datastore:
+          title: Etcd Datastore
+          type: string
+          description: Unique name of the component
+        k8sversion:
+          title: Kubernetes Version
+          type: string
+          description: Unique name of the component
+          pattern: '^1.(30|31|32)$'
+
+    - title: vSphere vcenter connection
+      required:
+        - dcname
+        - dcurl
+        - dcthumbprint
+        - dccredsecret
+        - dcnodepool
+        - dcnodefolder
+        - dcnodestoragepolicy
+        - dcnodevmtemplate
+        - dcnodenetwork
+      properties:
+        dcname:
+          title: Datacenter Name
+          type: string
+          description: Scegli l'ambiente di deploy
+          enum:
+            - "EDA - Datacenter Elogic A - Produzione"
+          ui:widget: select
+        dcurl:
+          title: Datacenter URL
+          type: string
+          description: Scegli l'ambiente di deploy
+          enum:
+            - "10.19.6.1"
+          ui:widget: select
+        dcthumbprint:
+          title: Datacenter Thumbprint
+          type: string
+          description: Scegli l'ambiente di deploy
+          enum:
+            - "2D:91:19:B3:27:30:02:CE:C0:38:CF:77:EF:1B:E6:A8:4B:9C:BB:D6:C5:59:DD:6B:6C:DF:F2:65:83:24:C1:96"
+        dccredsecret:
+          title: Datacenter Credential Secret
+          type: string
+          description: Scegli l'ambiente di deploy
+          enum:
+            - "vsphere-cluster-identity"
+        dcnodefolder:
+          title: Datacenter Node Folder
+          type: string
+          description: Scegli la folder di destinazione del nodo
+          enum:
+            - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+          ui:widget: select
+        dcnodepool:
+          title: Datacenter Node Resource Pool
+          type: string
+          description: Scegli il pool di destinazione del nodo
+          enum:
+            - "/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+          ui:widget: select
+        dcnodestoragepolicy:
+          title: Datacenter Node Storage Policy
+          type: string
+          description: Scegli la storage policy di destinazione del nodo
+          enum:
+            - "DATA4_ENT-PLUS_K8S"
+          ui:widget: select
+        dcnodevmtemplate:
+          title: Datacenter Node VM Template
+          type: string
+          description: Scegli il template per la vm del nodo
+          enum:
+            - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
+          ui:widget: select
+        dcnodenetwork:
+          title: Datacenter Node Network
+          type: string
+          description: Scegli la network per la vm del nodo
+          enum:
+            - "/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
+          ui:widget: select
+
+    - title: Get IPAM info
+      required:
+        - ipampoolname
+        - ipampoolrange
+        - ipamrangeprefix
+        - ipamrangegw
+      properties:
+        ipampoolname:
+          title: Name
+          type: string
+          description: IPAM Provider Name
+        ipamrangeprefix:
+          title: Prefix
+          type: integer
+          description: IPAM Provier Prefix
+        ipamrangegw:
+          title: Gateway
+          type: string
+          description: IPAM Provider Gateway
+          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+        ipampoolrange:
+          # range è una lista, posso avere range su reti diverse? Se sì, come specifico i gw?
+          title: IPAM ranges
+          type: array
+          description: Required storage for db
+          items:
+            type: object
+            required: [rangestart, rangeend]
+            properties:
+              rangestart:
+                type: string
+                title: Range First Address
+                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
+              rangeend:
+                type: string
+                title: Range Last Address
+                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
 
     - title: Get Nodes Info
       required:
@@ -136,7 +181,7 @@ spec:
           description: Required storage for db
           items:
             type: object
-            required: [nodename, replicas, cpu, ram, disk, dcnodefolder, dcnodepool, dcnodestoragepolicy, dcnodevmtemplate, dcnodenetwork]
+            required: [nodename, replicas, cpu, ram, disk]
             properties:
               nodename:
                 type: string
@@ -153,42 +198,8 @@ spec:
               disk:
                 type: integer
                 title: Disk Size
-              dcnodefolder:
-                title: Datacenter Node Folder
-                type: string
-                description: Scegli la folder di destinazione del nodo
-                enum:
-                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-                ui:widget: select
-              dcnodepool:
-                title: Datacenter Node Resource Pool
-                type: string
-                description: Scegli il pool di destinazione del nodo
-                enum:
-                  - "/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-                ui:widget: select
-              dcnodestoragepolicy:
-                title: Datacenter Node Storage Policy
-                type: string
-                description: Scegli la storage policy di destinazione del nodo
-                enum:
-                  - "DATA4_ENT-PLUS_K8S"
-                ui:widget: select
-              dcnodevmtemplate:
-                title: Datacenter Node VM Template
-                type: string
-                description: Scegli il template per la vm del nodo
-                enum:
-                  - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
-                ui:widget: select
-              dcnodenetwork:
-                title: Datacenter Node Network
-                type: string
-                description: Scegli la network per la vm del nodo
-                enum:
-                  - "/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
-                ui:widget: select
               labels:
+                title: Nodes Labels
                 type: array
                 items:
                   type: object
@@ -200,8 +211,8 @@ spec:
                     value:
                       type: string
                       title: Value
-                title: Nodes labels
               taints:
+                title: Node Taints
                 type: array
                 items:
                   type: object
@@ -214,21 +225,27 @@ spec:
                       type: string
                       title: Value
 
-#    - title: Select Sveltos Apps
-#      required:
-#        - sveltosapps
-#      properties:
-#        sveltosapps:
-#          type: array
-#          items:
-#            type: string
-#            enum: 
-#              - argocd
-#              - cert-manager
-#              - external-dns
-#          uniqueItems: true
-#          title: Applicazioni da installare
-#          description: Seleziona una o più app
+    - title: Select Sveltos Apps
+      required:
+        - sveltosapps
+      properties:
+        sveltosapps:
+          type: array
+          items:
+            type: string
+            enum: 
+              - "fortigate:fabric",
+              - "loadbalancer:metallb",
+              - "nfs:storage",
+              - "cd:argocd",
+              - "monitoring:persistent",
+              - "nginx-management:ingress",
+              - "nginx-prod:ingress",
+              - "letsencrypt:external-dns",
+              - "dinova-letsencypt:cert-manager",
+          uniqueItems: true
+          title: Applicazioni da installare
+          description: Seleziona una o più app
 
     - title: Choose a location
       required:
@@ -248,28 +265,31 @@ spec:
           description: Il nome per il nuovo branch (es. feature/mio-componente).
 
   steps:
-#    - id: save-metadata
-#      name: Save Input Parameters
-#      action: fetch:template
-#      input: 
-#        url: ./template/clastix-values
-#        targetPath: ./output
-#        values:
-#          apiserverip: ${{ parameters.apiserverip }}
-#          clustername: ${{ parameters.clustername }}
-#          clusterdomain: ${{ parameters.clusterdomain }}
-#          cpreplicas: ${{ parameters.cpreplicas }}
-#          datastore: ${{ parameters.datastore }}
-#          k8sversion: ${{ parameters.k8sversion }}
-#          dcname: ${{ parameters.dcname }}
-#          dcurl: ${{ parameters.dcurl }}
-#          dcthumbprint: ${{ parameters.dcthumbprint }}
-#          dccredsecret: ${{ parameters.dccredsecret }}
-#          ipampoolrange: ${{ parameters.ipampoolrange }}
-#          ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
-#          ipamrangegw: ${{ parameters.ipamrangegw }}
-#          ipampoolname: ${{ parameters.ipampoolname }}
-#          nodeinfo: ${{ parameters.nodeinfo }}
+    - id: save-metadata
+      name: Save Input Parameters
+      action: fetch:template
+      input: 
+        url: ./template/clastix-values
+        targetPath: ./output
+        values:
+          contract: ${{ parameters.contract }}
+          apiserverip: ${{ parameters.apiserverip }}
+          gatewayip: ${{ parameters.gatewayip }}
+          clustername: ${{ parameters.clustername }}
+          clusterdomain: ${{ parameters.clusterdomain }}
+          cpreplicas: ${{ parameters.cpreplicas }}
+          datastore: ${{ parameters.datastore }}
+          k8sversion: ${{ parameters.k8sversion }}
+          dcname: ${{ parameters.dcname }}
+          dcurl: ${{ parameters.dcurl }}
+          dcthumbprint: ${{ parameters.dcthumbprint }}
+          dccredsecret: ${{ parameters.dccredsecret }}
+          ipampoolranges: ${{ parameters.ipampoolrange }}
+          ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
+          ipamrangegw: ${{ parameters.ipamrangegw }}
+          ipampoolname: ${{ parameters.ipampoolname }}
+          nodeinfo: ${{ parameters.nodeinfo }}
+          sveltosapps: ${{ parameters.sveltosapps }}
 
     - id: fetch-base
       name: Fetch Base
@@ -294,6 +314,7 @@ spec:
           ipamrangegw: ${{ parameters.ipamrangegw }}
           ipampoolname: ${{ parameters.ipampoolname }}
           nodeinfo: ${{ parameters.nodeinfo }}
+          sveltosapps: ${{ parameters.sveltosapps }}
 
     - id: apri-pr
       name: Apri Pull Request

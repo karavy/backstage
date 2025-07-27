@@ -15,6 +15,8 @@ export async function retrievGetCatalogFromGit({
 }: {
   logger: LoggerService;
   catalog: typeof catalogServiceRef.T;
+  integrations: ScmIntegrationRegistry;
+  githubCredentialsProvider?: GithubCredentialsProvider;
 }): Promise<TodoListService> {
     const gitToken = req.headers['x-clastix-gittoken']
     const gitRepo = req.headers['x-clastix-repo']
@@ -23,6 +25,7 @@ export async function retrievGetCatalogFromGit({
 
     try {
       const git = simpleGit();
+      //await git.clone(repoUrl, tmpDir, ['--branch', '1.6']);
       await git.clone(repoUrl, tmpDir);
       const content = await fs.readFile(path.join(tmpDir, 'catalog-info.yaml'), 'utf-8');
       const parsed = yaml.parse(content);
@@ -30,4 +33,4 @@ export async function retrievGetCatalogFromGit({
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
-
+}

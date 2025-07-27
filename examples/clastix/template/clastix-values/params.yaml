@@ -3,43 +3,54 @@ kind: ClastixParams
 metadata:
   name: ${{ values.clustername }}
 spec:
-  apiserverip: ${{ values.apiserverip }}
+  contract: ${{ values.contract }}
   clustername: ${{ values.clustername }}
   clusterdomain: ${{ values.clusterdomain }}
+  apiserverip: ${{ values.apiserverip }}
   cpreplicas: ${{ values.cpreplicas }}
   datastore: ${{ values.datastore }}
   k8sversion: ${{ values.k8sversion }}
+  gatewayip: ${{ values.gatewayip }}
+
   dcname: ${{ values.dcname }}
   dcurl: ${{ values.dcurl }}
   dcthumbprint: ${{ values.dcthumbprint }}
   dccredsecret: ${{ values.dccredsecret }}
-  ipampoolranges: 
+  dcfolder: ${{ values.dcnodefolder }}
+  dcnodepool: ${{ values.dcnodepool }}
+  dcstorage: ${{ values.dcnodestoragepolicy }}
+  dcvmtemplate: ${{ values.dcnodevmtemplate }}
+  dcnetwork: ${{ values.dcnodenetwork }}
+
+  ipampool: 
 {% for ranges in values.ipampoolranges %}
-    - ${{ ranges.rangestart }}-${{ ranges.rangeend }}
+    - rangestart: ${{ ranges.rangestart }}
+      rangeend: ${{ ranges.rangeend }}
+      prefix: ${{ values.ipamrangeprefix }}
+      gateway: ${{ values.ipamrangegw }}
+      ipamname: ${{ values.ipampoolname }}
 {% endfor %}
-  ipamrangeprefix: ${{ values.ipamrangeprefix }}
-  ipamrangegw: ${{ values.ipamrangegw }}
-  ipampoolname: ${{ values.ipampoolname }}
-  nodeinfo: 
+  nodesinfo: 
 {%- for ninfo in values.nodeinfo %}
-    - name: ${{ ninfo.nodename }}
-      folder: ${{ ninfo.dcnodefolder }}
-      resourcePool: ${{ ninfo.dcnodepool }}
-      storagePolicyName: ${{ ninfo.dcnodestoragepolicy }}
-      template: ${{ ninfo.dcnodevmtemplate }}
-      network: ${{ ninfo.dcnodenetwork }}
+    - nodename: ${{ ninfo.nodename }}
       replicas: ${{ ninfo.replicas  }}
-      taints:
+      cpu: ${{ ninfo.cpu }}
+      mbram: ${{ ninfo.mbram }}
+      gbdisk: ${{ ninfo.gbdisk }}
+      nodetaints:
   {% for taint in ninfo.taints -%}
-        ${{ taint.key }}: ${{ taint.value }}
+        - taintkey: ${{ taint.key }}
+          taintvalue: ${{ taint.value }}
   {%- endfor -%}
         # -- Labels to add to the node pool when joining the cluster
-      labels:
+      nodelabels:
   {% for label in ninfo.labels -%}
-        ${{ label.key }}: ${{ label.value }}
+        - labelkey: ${{ label.key }}
+          labelvalue: ${{ label.value }}
   {%- endfor -%}
-      diskGiB: ${{ ninfo.disk }}
-      memoryMiB: ${{ ninfo.ram }}
-      numCPUs: ${{ ninfo.cpu }}
+      sveltosapps:
+  {% for app in values.sveltosapps -%}
+        - ${{ app }}
+  {%- endfor -%}
 {% endfor %}
 

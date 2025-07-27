@@ -15,14 +15,21 @@ import { ProfilesStep } from './steps/ProfilesStep';
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
 
 const profileOptions = [
-  { profilekey: 'prod-profile-01', profilevalue: 'Profilo di Produzione (EU)' },
-  { profilekey: 'dev-profile-x', profilevalue: 'Profilo di Sviluppo (US)' },
-  { profilekey: 'staging-profile', profilevalue: 'Profilo di Staging' },
+  { profilekey: 'fortigate:fabric', profilevalue: 'fabric' },
+  { profilekey: 'loadbalancer:metallb', profilevalue: 'metallb' },
+  { profilekey: 'nfs:storage', profilevalue: 'storage' },
+  { profilekey: 'cd:argocd', profilevalue: 'argocd' },
+  { profilekey: 'monitoring:persistent', profilevalue: 'persistent' },
+  { profilekey: 'nginx-management:ingress', profilevalue: 'ingress' },
+  { profilekey: 'nginx-prod:ingress', profilevalue: 'ingress' },
+  { profilekey: 'letsencrypt:external-dns', profilevalue: 'external-dns' },
+  { profilekey: 'dinova-letsencypt:cert-manager', profilevalue: 'cert-manager' },
 ];
 
 // Definiamo un tipo per l'intero stato del nostro form
 export interface WizardFormData {
   // Primo step
+  contract: string;
   clustername: string;
   clusterdomain: string;
   apiserverip: string;
@@ -36,6 +43,12 @@ export interface WizardFormData {
   dcurl: string;
   dcthumbprint: string;
   dccredsecret: string;
+
+  dcfolder: string;
+  dcpool: string;
+  dcstorage: string;
+  dcvmtemplate: string;
+  dcnetwork: string;
 
   ipampool: { 
     ipamname: string;
@@ -53,11 +66,6 @@ export interface WizardFormData {
     cpu: number;
     mbram: number;
     gbdisk: number;
-    dcfolder: string;
-    dcpool: string;
-    dcstorage: string;
-    dcvmtemplate: string;
-    dcnetwork: string;
     nodelabels: {
       labelkey: string;
       labelvalue: string;
@@ -77,12 +85,13 @@ export const ExampleComponent = () => {
   const [gitClusterName, setGitClusterName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { entity, type } = useParams<{ entity: string, type: string }>();
+  const { owner, entity, type } = useParams<{ owner: string, entity: string, type: string }>();
   const fetcher = useApi(fetchApiRef);
 
   // Stato centrale per tutti i dati del wizard
   const { control, getValues, reset } = useForm<WizardFormData>({
     defaultValues: {
+      contract: '',
       clustername: '',
       clusterdomain: '',
       apiserverip: '',
@@ -95,10 +104,15 @@ export const ExampleComponent = () => {
       dcurl: '',
       dcthumbprint: '',
       dccredsecret: '',
-
+      dcfolder: 'a', 
+      dcpool: 'b', 
+      dcstorage: 'c', 
+      dcvmtemplate: 'd', 
+      dcnetwork: 'e',
+      
       ipampool: [{ ipamname: '', prefix: 26, gateway: '', rangestart: '0.0.0.0', rangeend: '0.0.0.0' }],
 
-      nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50, dcfolder: 'a', dcpool: 'b', dcstorage: 'c', dcvmtemplate: 'd', dcnetwork: 'e', nodelabels: [] , nodetaints: []}],
+      nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50,  nodelabels: [] , nodetaints: []}],
 
       profilelabels: []
     },
@@ -111,11 +125,10 @@ export const ExampleComponent = () => {
 
 	try {
           // Metti qui l'URL del tuo backend o API
-          const response = await fetcher.fetch('http://localhost:7007/api/get-git-catalog/entity-yaml', {
+          const response = await fetcher.fetch("http://localhost:7007/api/get-git-catalog/getrepo/" + owner + "/" + entity, {
   	  headers: {
               "Authorization": "Bearer 5H2TeAbPTxZx8Jz7svz95zz128XX2V3l",
-              "X-Clastix-GitToken": "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",
-              "X-Clastix-Repo": entity
+              "X-Clastix-GitToken": "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",
 	    }
   	  });
 
@@ -161,7 +174,7 @@ export const ExampleComponent = () => {
 
       // 5. Reindirizza l'utente alla pagina del task dello scaffolder
       //navigate(`/scaffolder/tasks/${taskId}`);
-      navigate(`/create/tasks/${taskId}`);
+      //navigate(`/create/tasks/${taskId}`);
 
     } catch (e) {
       console.error("Errore durante l'avvio dello scaffolder:", e);

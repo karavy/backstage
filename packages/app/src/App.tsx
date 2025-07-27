@@ -48,7 +48,7 @@ import { generatePath } from 'react-router';
 
 const editCatalogEntryActions: TableProps<CatalogTableRow>['actions'] = [
   ({ entity }) => {
-    const url = "/create-app/" + entity.metadata?.name + "/" + entity.spec?.type
+    const url = "/create-app/" + entity.spec?.owner + "/" + entity.metadata?.name + "/" + entity.spec?.type
     const title = 'Edit';
     return {
       icon: () => (
@@ -129,7 +129,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/create-app/:entity/:type" element={<CreateAppPage />} />
+    <Route path="/create-app/:owner/:entity/:type" element={<CreateAppPage />} />
   </FlatRoutes>
 );
 

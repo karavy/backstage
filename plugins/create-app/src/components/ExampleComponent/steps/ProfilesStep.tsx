@@ -44,7 +44,7 @@ export const ProfilesStep = ({ control, options }: ProfilesStepProps) => {
                     // Trova l'oggetto opzione corrispondente alla chiave
                     const option = options.find(opt => opt.profilekey === profilekey);
                     // Mostra il suo valore descrittivo
-                    return <Chip key={profilekey} label={option?.profilevalue || profilekey} size="small" />;
+                    return <Chip key={profilekey} label={profilekey} size="small" />;
                   })}
                 </Box>
               )}
@@ -52,7 +52,7 @@ export const ProfilesStep = ({ control, options }: ProfilesStepProps) => {
               {/* Il menu mostra il valore, ma al click salva la chiave */}
               {options.map(option => (
                 <MenuItem key={option.profilekey} value={option.profilevalue}>
-                  {option.profilevalue}
+		  {option.profilekey}
                 </MenuItem>
               ))}
             </Select>

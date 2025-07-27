@@ -88,7 +88,87 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
                 <MenuItem value="vsphere-cluster-identity">vsphere-cluster-identity</MenuItem>
               </Select>
             </FormControl>)}
-	 />
+	/>
+        <Controller
+          name={`dcfolder`}
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcfolder-select-label">Node VM Folder</InputLabel>
+              <Select
+                {...field}
+                labelId="dcfolder-select-label"
+                label="Node VM Folder"
+                style={{ marginBottom: '24px' }}
+            >
+                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+              </Select>
+            </FormControl>)}
+        />
+        <Controller
+          name={`dcpool`}
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcpool-select-label">Node Resource Pool</InputLabel>
+              <Select
+                {...field}
+                labelId="dcpool-select-label"
+                label="Node Resource Pool"
+                style={{ marginBottom: '24px' }}
+            >
+                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+              </Select>
+            </FormControl>)}
+        />
+        <Controller
+          name={`dcstorage`}
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcstorage-select-label">Node Storage Policy</InputLabel>
+              <Select
+                {...field}
+                labelId="dcstorage-select-label"
+                label="Node Storage Policy"
+                style={{ marginBottom: '24px' }}
+            >
+                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+              </Select>
+            </FormControl>)}
+        />
+        <Controller
+          name={`dcvmtemplate`}
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcvmtemplate-select-label">Node VM Template</InputLabel>
+              <Select
+                {...field}
+                labelId="dcvmtemplate-select-label"
+                label="Node Resource Pool"
+                style={{ marginBottom: '24px' }}
+            >
+                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+              </Select>
+            </FormControl>)}
+        />
+        <Controller
+          name={`dcnetwork`}
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcnetwork-select-label">Node Network</InputLabel>
+              <Select
+                {...field}
+                labelId="dcnetwork-select-label"
+                label="Node Network"
+                style={{ marginBottom: '24px' }}
+            >
+                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+              </Select>
+            </FormControl>)}
+        />
     </Box>
   );
 };

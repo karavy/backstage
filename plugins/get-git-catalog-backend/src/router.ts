@@ -10,6 +10,10 @@ import simpleGit from 'simple-git';
 import fs from 'fs/promises';
 import yaml from 'yaml';
 import path from 'path';
+import {
+  DefaultGithubCredentialsProvider,
+  ScmIntegrations,
+} from '@backstage/integration';
 
 export async function createRouter({
   httpAuth,
@@ -32,43 +36,10 @@ export async function createRouter({
     entityRef: z.string().optional(),
   });
 
-  router.post('/todos', async (req, res) => {
-    const parsed = todoSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw new InputError(parsed.error.toString());
-    }
-
-    const result = await todoListService.createTodo(parsed.data, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-    });
+  router.get('/getrepo/:owner/:repo', async (req, res) => {
+    const result = await todoListService.createTodo(req, res);
 
     res.status(201).json(result);
-  });
-
-  router.get('/todos', async (_req, res) => {
-    res.json(await todoListService.listTodos());
-  });
-
-  router.get('/todos/:id', async (req, res) => {
-    res.json(await todoListService.getTodo({ id: req.params.id }));
-  });
-
-  router.get('/entity-yaml', async (req, res) => {
-    const gitToken = req.headers['x-clastix-gittoken']
-    const gitRepo = req.headers['x-clastix-repo']
-console.log(gitToken)
-    const repoUrl = "https://nouser:" + gitToken + "@github.com/karavy/" + gitRepo as string;
-    const tmpDir = path.join('/tmp/', Date.now().toString());
-
-    try {
-      const git = simpleGit();
-      await git.clone(repoUrl, tmpDir);
-      const content = await fs.readFile(path.join(tmpDir + "/output", 'params.yaml'), 'utf-8');
-      const parsed = yaml.parse(content);
-      res.json(parsed);
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
   });
 
   return router;
