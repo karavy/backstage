@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Stepper, Step, StepLabel, Button, Box } from '@material-ui/core';
 import { Page, Header, Content, Progress } from '@backstage/core-components';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 // Importa i componenti dei singoli step
@@ -13,6 +13,9 @@ import { NodesInfoStep} from './steps/NodesInfoStep';
 import { ProfilesStep } from './steps/ProfilesStep';
 
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
+
+import { loadInitialFormData } from './api/initialDataApi';
+import { fetchNetworkOptions } from './api/getVsphereData';
 
 const profileOptions = [
   { profilekey: 'fortigate:fabric', profilevalue: 'fabric' },
@@ -83,13 +86,20 @@ export const ExampleComponent = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const [gitClusterName, setGitClusterName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   
   const { owner, entity, type } = useParams<{ owner: string, entity: string, type: string }>();
-  const fetcher = useApi(fetchApiRef);
+  const fetcherLoadInitial = useApi(fetchApiRef);
+  const fetcherVsphere = useApi(fetchApiRef);
+
+  // DEPENDANT SELECT
+  const [networkOptions, setNetworkOptions] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  // FINO QUI
 
   // Stato centrale per tutti i dati del wizard
-  const { control, getValues, reset } = useForm<WizardFormData>({
+  const { control, getValues, reset, setValue } = useForm<WizardFormData>({
     defaultValues: {
       contract: '',
       clustername: '',
@@ -104,11 +114,11 @@ export const ExampleComponent = () => {
       dcurl: '',
       dcthumbprint: '',
       dccredsecret: '',
-      dcfolder: 'a', 
-      dcpool: 'b', 
-      dcstorage: 'c', 
-      dcvmtemplate: 'd', 
-      dcnetwork: 'e',
+      dcfolder: '', 
+      dcpool: '', 
+      dcstorage: '', 
+      dcvmtemplate: '', 
+      dcnetwork: '',
       
       ipampool: [{ ipamname: '', prefix: 26, gateway: '', rangestart: '0.0.0.0', rangeend: '0.0.0.0' }],
 
@@ -119,42 +129,66 @@ export const ExampleComponent = () => {
   });
 
   useEffect(() => {
-    if (entity != "-") {
-      const loadInitialData = async () => {
-        setIsLoading(true)
-
-	try {
-          // Metti qui l'URL del tuo backend o API
-          const response = await fetcher.fetch("http://localhost:7007/api/get-git-catalog/getrepo/" + owner + "/" + entity, {
-  	  headers: {
-              "Authorization": "Bearer 5H2TeAbPTxZx8Jz7svz95zz128XX2V3l",
-              "X-Clastix-GitToken": "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",
-	    }
-  	  });
-
-          if (!response.ok) {
-            throw new Error(`Errore di rete: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-
-          // 6. Usa reset() per popolare l'intero form con i dati ricevuti
-	  if (data && data.spec) {
-            reset(data.spec);
-          }
+    // loadInitial Data
+    if (entity && entity !== "-") {
+      const initialLoad = async () => {
+        setIsLoading(true);
+        try {
+          const formData = await loadInitialFormData(fetcherLoadInitial, owner, entity);
+          reset(formData); // Popola il form con i dati ricevuti
         } catch (error) {
-          console.error("Impossibile caricare i dati iniziali:", error);
-        // Qui potresti mostrare una notifica di errore all'utente
+          console.error("Fallito il caricamento iniziale:", error);
+          // Gestisci l'errore, magari con una notifica
         } finally {
           setIsLoading(false);
         }
       };
-
-      loadInitialData();
-    } else {
-      setIsLoading(false);
+      initialLoad();
     }
-  }, [fetcher, entity, reset]);
+  }, [fetcherLoadInitial, entity, owner, reset]);
+
+  const dcNameTemplate = useWatch({
+    control,
+    name: 'dcurl',
+  });
+  const dcThumbprintTemplate = useWatch({
+    control,
+    name: 'dcname',
+  });
+  const dcPoolTemplate = useWatch({
+    control,
+    name: 'dcfolder',
+  });
+  const dcNetworkTemplate = useWatch({
+    control,
+    name: 'dcnetwork',
+  });
+
+  useEffect(() => {
+
+    if (!dcNameTemplate) {
+      setNetworkOptions([]);
+      return;
+    }
+
+    const dependentLoad = async () => {
+      //setIsNetworkLoading(true);
+      //setNetworkError(null);
+      setValue('dcname', ''); // Resetta il campo dipendente
+
+      try {
+        const options = await fetchNetworkOptions(fetcherVsphere, dcNameTemplate, dcNameTemplate, "DATACENTER");
+        setNetworkOptions(options);
+      } catch (e) {
+        console.log(e);
+        setNetworkOptions([]);
+      } finally {
+        //setIsNetworkLoading(false);
+      }
+    };
+
+    dependentLoad();
+  }, [fetcherVsphere, dcNameTemplate, setValue]);
 
   const handleNext = () => setActiveStep((prev) => prev + 1);
   const handleBack = () => setActiveStep((prev) => prev - 1);
@@ -188,7 +222,7 @@ export const ExampleComponent = () => {
       case 0:
         return <ClusterMainInfo control={control} />;
       case 1:
-        return <VSphereDcInfo control={control} />;
+        return <VSphereDcInfo control={control} dcNameTemplate={dcNameTemplate} networkOptions={networkOptions}/>;
       case 2:
         return <IpamPoolStep control={control} />;
       case 3:

@@ -1,6 +1,6 @@
 // Dentro il file steps/DetailsStep.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Controller, Control } from 'react-hook-form';
 import {
   TextField,
@@ -17,30 +17,10 @@ interface VSphereDcInfoProps {
   control: Control<WizardFormData>;
 }
 
-export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
-  
+export const VSphereDcInfo = ({ control, dcNameTemplate, networkOptions }: VSphereDcInfoProps) => {
   return (
     <Box>
       <Typography variant="h6" gutterBottom>Dettagli del Servizio</Typography>
-
-      {/* INIZIO: CODICE PER IL MENU A TENDINA */}
-        <Controller
-          name="dcname"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth style={{ marginBottom: '24px' }}>
-              <InputLabel id="dcname-select-label">Nome cluster vSphere</InputLabel>
-              <Select
-	        {...field}
-          	labelId="dcname-select-label"
-	        label="Nome cluster vSphere"
-	        style={{ marginBottom: '24px' }}
-              >
-                <MenuItem value="EDA - Datacenter Elogic A - Produzione">EDA - Datacenter Elogic A - Produzione</MenuItem>
-              </Select>
-            </FormControl>
-	  )}
-	/>
         <Controller
           name="dcurl"
           control={control}
@@ -58,6 +38,27 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
             </FormControl>)}
 	/>
         <Controller
+          name="dcname"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '24px' }}>
+              <InputLabel id="dcname-select-label">Nome cluster vSphere</InputLabel>
+              <Select
+	        {...field}
+          	labelId="dcname-select-label"
+	        label="Nome cluster vSphere"
+	        style={{ marginBottom: '24px' }}
+                disabled={!dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
+              >
+              {networkOptions != null && networkOptions.map(network => (
+                <MenuItem key="{network.value}" value="{network.value}">{network.value}</MenuItem>
+	      ))}
+              </Select>
+            </FormControl>
+	  )}
+	/>
+{/*
+       <Controller
           name="dcthumbprint"
           control={control}
           render={({ field }) => (
@@ -68,8 +69,13 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
                 labelId="dcthumbprint-select-label"
                 label="Impronta Certificato Cluster vSphere"
                 style={{ marginBottom: '24px' }}
+                disabled={!dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
+                //disabled={!selectedTemplate || isLoading} // Disabilitato se non c'è selezione o se sta caricando
+                //endAdornment={isLoading && <CircularProgress size={20} style={{ marginRight: '16px' }} />}
               >
-                <MenuItem value="71:5D:74:A5:C2:17:96:F8:72:6A:AF:CB:A4:46:26:F8:04:AC:19:7E:E1:A4:D3:BA:6D:62:FA:C1:1E:6F:F9:6E">EDA - Datacenter Elogic A - Produzione</MenuItem>
+              {networkOptions != null && networkOptions.map(network => (
+                <MenuItem key="{network.value}" value="{network.value}">{network.value}</MenuItem>
+	      ))}
              </Select>
             </FormControl>)}
 	/>
@@ -90,7 +96,7 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
             </FormControl>)}
 	/>
         <Controller
-          name={`dcfolder`}
+          name="dcfolder"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth style={{ marginBottom: '16px' }}>
@@ -106,7 +112,7 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
             </FormControl>)}
         />
         <Controller
-          name={`dcpool`}
+          name="dcpool"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth style={{ marginBottom: '16px' }}>
@@ -122,7 +128,7 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
             </FormControl>)}
         />
         <Controller
-          name={`dcstorage`}
+          name="dcstorage"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth style={{ marginBottom: '16px' }}>
@@ -138,7 +144,7 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
             </FormControl>)}
         />
         <Controller
-          name={`dcvmtemplate`}
+          name="dcvmtemplate"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth style={{ marginBottom: '16px' }}>
@@ -149,12 +155,13 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
                 label="Node Resource Pool"
                 style={{ marginBottom: '24px' }}
             >
-                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+                <MenuItem value="10.19.6.1">value1</MenuItem>
+                <MenuItem value="vcenter-unknown">value1</MenuItem>
               </Select>
             </FormControl>)}
         />
         <Controller
-          name={`dcnetwork`}
+          name="dcnetwork"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth style={{ marginBottom: '16px' }}>
@@ -165,10 +172,11 @@ export const VSphereDcInfo = ({ control }: VSphereDcInfoProps) => {
                 label="Node Network"
                 style={{ marginBottom: '24px' }}
             >
-                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
+                <MenuItem value="pippo">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
               </Select>
             </FormControl>)}
         />
+*/}
     </Box>
   );
 };
