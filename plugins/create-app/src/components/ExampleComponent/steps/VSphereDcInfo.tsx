@@ -49,14 +49,14 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
 	        label="Nome cluster vSphere"
 	        style={{ marginBottom: '24px' }}
                 disabled={!selectOptions.dcUrlTemplate} // Disabilitato se non c'è selezione o se sta caricando
-              >
-              {selectOptions.datacenterOptions != null && selectOptions.datacenterOptions.map(datacenter => (
+            >
+                {selectOptions.datacenterOptions != null && selectOptions.datacenterOptions.map(datacenter => (
                 <MenuItem key="{datacenter.value}" value="{datacenter.value}">{datacenter.value}</MenuItem>
-	      ))}
+	            ))}
               </Select>
             </FormControl>
 	  )}
-	/>
+	  />
         <Controller
           name="dcpool"
           control={control}
@@ -70,9 +70,27 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 style={{ marginBottom: '24px' }}
                 disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
-              {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
+                {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
                 <MenuItem key="{resourcepool.path}" value="{resourcepool.path}">{resourcepool.name}</MenuItem>
-	      ))}
+	            ))}
+              </Select>
+            </FormControl>)}
+        />
+        <Controller
+          name="dcfolder"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcfolder-select-label">Node VM Folder</InputLabel>
+              <Select
+                {...field}
+                labelId="dcfolder-select-label"
+                label="Node VM Folder"
+                style={{ marginBottom: '24px' }}
+            >
+                {selectOptions.folderOptions != null && selectOptions.folderOptions.map(folder => (
+                <MenuItem key="{folder.path}" value="{folder.path}">{folder.name}</MenuItem>
+	            ))}
               </Select>
             </FormControl>)}
         />
@@ -97,7 +115,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
 	      ))}
              </Select>
             </FormControl>)}
-	/>
+	    />
         <Controller
           name="dccredsecret"
           control={control}
@@ -113,23 +131,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 <MenuItem value="vsphere-cluster-identity">vsphere-cluster-identity</MenuItem>
               </Select>
             </FormControl>)}
-	/>
-        <Controller
-          name="dcfolder"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth style={{ marginBottom: '16px' }}>
-              <InputLabel id="dcfolder-select-label">Node VM Folder</InputLabel>
-              <Select
-                {...field}
-                labelId="dcfolder-select-label"
-                label="Node VM Folder"
-                style={{ marginBottom: '24px' }}
-            >
-                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
-              </Select>
-            </FormControl>)}
-        />
+	    />
         <Controller
           name="dcstorage"
           control={control}

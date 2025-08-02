@@ -1,4 +1,4 @@
-export async function fetchDatacenterOptions(fetcher: string, dcUrl: string) {
+export async function fetchDatacenterOptions(fetcher, dcUrl: string) {
   // Qui la tua logica per recuperare le opzioni, anche con una vera chiamata API
 //  if (requestedType == "DATACENTER") {
 //   if (dcUrl === "10.19.6.1") {
@@ -20,12 +20,20 @@ export async function fetchDatacenterOptions(fetcher: string, dcUrl: string) {
   return data;
 }
 
-export async function fetchFolderOptions(fetcher, selectedTemplate, dcUrl) {
+export async function fetchFolderOptions(fetcher, selectedTemplate, dcUrl: string, filter: string, dcenter: string) {
+    const response = await fetcher.fetch("http://localhost:8080/folders/vm/" + dcUrl + "/" + encodeURIComponent(dcenter) + "/" + filter, {});
+      
+    if (!response.ok) {
+        throw new Error(`Errore di rete: ${response.statusText}`);
+    }
 
+    const data = await response.json();
+
+    return data;
 }
 
-export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string) {
-    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + filter, {});
+export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string, dcenter: string) {
+    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + encodeURIComponent(dcenter)+ "/" + filter, {});
       
     if (!response.ok) {
         throw new Error(`Errore di rete: ${response.statusText}`);

@@ -1,0 +1,109 @@
+import { createTemplateAction, runCommand } from '@backstage/plugin-scaffolder-node';
+import { z } from 'zod';
+import { ScmIntegrations } from '@backstage/integration';
+import { Octokit } from 'octokit';
+import path from 'path';
+
+export const createExampleAction = () => {
+  return createTemplateAction({
+    id: 'github:createmerge',
+    description: 'Runs an example action',
+    schema: {
+      input: z.object({
+        repoUrl: z =>
+	  z.string({ 
+            description: 'URL del repository GitHub' 
+        }),
+        token: z => 
+	  z.string({ 
+            description: 'Token di autenticazione GitHub' 
+	}),
+        sourcePath: z => 
+	  z.string({ 
+            description: 'Percorso dei file sorgente da copiare' 
+	}).optional().default('./skeleton'),
+        commitMessage: z =>
+	  z.string({ 
+	    description: 'Messaggio di commit per aggiornamento' 
+	}).optional().default('feat: Aggiornamento da template Backstage'),
+        tagName: z => 
+	  z.string({ 
+	    description: 'Tag da applicare in caso di aggiornamento' 
+	}).optional(),
+      }),
+    },
+
+    async handler(ctx) {
+      const { repoUrl, token, sourcePath, commitMessage, tagName } = ctx.input;
+
+      const octokit = new Octokit({ auth: token });
+
+      let repoExists = false;
+      try {
+        await octokit.rest.repos.get({ owner, repo });
+        repoExists = true;
+      } catch (e) {
+        if (e.status !== 404) {
+          throw e;
+        }
+      }
+
+      const sourceDir = path.resolve(ctx.templateInfo.baseUrl, sourcePath);
+/*
+      if (repoExists) {
+        // --- FLUSSO 2: IL REPO ESISTE GIÀ ---
+        ctx.log.info(`Il repository ${owner}/${repo} esiste. Avvio procedura di aggiornamento...`);
+
+        // Clona, applica modifiche, committa, pusha e tagga
+        await runCommand({
+          command: 'git',
+          args: ['clone', `https://x-access-token:${token}@github.com/${owner}/${repo}.git`, '.'],
+          options: { cwd: ctx.workspacePath },
+        });
+
+        await runCommand({ command: 'cp', args: ['-a', `${sourceDir}/.`, '.'], options: { cwd: ctx.workspacePath }});
+
+        await runCommand({ command: 'git', args: ['config', 'user.name', 'Backstage Bot'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['config', 'user.email', 'bot@example.com'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['add', '.'], options: { cwd: ctx.workspacePath }});
+
+        // Fa il commit solo se ci sono modifiche
+        const diff = await runCommand({ command: 'git', args: ['status', '--porcelain']});
+        if (diff.stdout.trim() !== '') {
+          await runCommand({ command: 'git', args: ['commit', '-m', commitMessage], options: { cwd: ctx.workspacePath }});
+          await runCommand({ command: 'git', args: ['push'], options: { cwd: ctx.workspacePath }});
+          ctx.log.info('Modifiche inviate con successo.');
+
+          if (tagName) {
+            await runCommand({ command: 'git', args: ['tag', tagName], options: { cwd: ctx.workspacePath }});
+            await runCommand({ command: 'git', args: ['push', 'origin', tagName], options: { cwd: ctx.workspacePath }});
+            ctx.log.info(`Tag ${tagName} creato e inviato.`);
+          }
+        } else {
+            ctx.log.info('Nessuna modifica da inviare.');
+        }
+
+      } else {
+        // --- FLUSSO 1: IL REPO NON ESISTE ---
+        ctx.log.info(`Il repository ${owner}/${repo} non esiste. Verrà creato...`);
+
+        // Crea il repo
+        await octokit.rest.repos.createForAuthenticatedUser({ name: repo, private: false });
+        ctx.log.info('Repository creato su GitHub.');
+
+        // Copia i file e pubblica
+        await runCommand({ command: 'cp', args: ['-a', `${sourceDir}/.`, '.'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['init'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['add', '.'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['config', 'user.name', 'Backstage Bot'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['config', 'user.email', 'bot@example.com'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['commit', '-m', 'Initial commit'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['branch', '-M', 'main'], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['remote', 'add', 'origin', `https://x-access-token:${token}@github.com/${owner}/${repo}.git`], options: { cwd: ctx.workspacePath }});
+        await runCommand({ command: 'git', args: ['push', '-u', 'origin', 'main'], options: { cwd: ctx.workspacePath }});
+        ctx.log.info('Contenuto iniziale pubblicato.');
+      }
+*/
+    },
+  });
+};
