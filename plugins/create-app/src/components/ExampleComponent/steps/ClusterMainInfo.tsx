@@ -29,12 +29,15 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
      <Controller
         name="contract"
         control={control}
-        render={({ field }) => (
+	rules={{ required: 'Il nome del cluster è obbligatorio.' }}
+        render={({ field, fieldState }) => (
           <TextField
             {...field}
             label="Nome del Contratto"
             variant="outlined"
             fullWidth
+            error={!!fieldState.error}  // 👈 mostra bordo rosso se errore
+            helperText={fieldState.error?.message}
             style={{ marginBottom: '24px' }}
           />
         )}
@@ -130,12 +133,20 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
       <Controller
         name="k8sversion"
         control={control}
-        render={({ field }) => (
+	rules={{
+  	  pattern: {
+      	    value: /^1\.(29|3[0-3])$/,
+            message: 'I valori validi sono 1.29, 1.30, 1.31, 1.32 e 1.33'
+          } 
+	}}
+        render={({ field, fieldState }) => (
           <TextField
             {...field}
             label="Versione Kubernetes"
             variant="outlined"
             fullWidth
+            error={!!fieldState.error}  // 👈 mostra bordo rosso se errore
+            helperText={fieldState.error?.message}
             style={{ marginBottom: '24px' }}
           />
         )}

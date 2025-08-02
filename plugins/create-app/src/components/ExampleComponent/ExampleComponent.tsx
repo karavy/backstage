@@ -101,7 +101,7 @@ export const ExampleComponent = () => {
   // FINO QUI
 
   // Stato centrale per tutti i dati del wizard
-  const { control, getValues, reset, setValue } = useForm<WizardFormData>({
+  const { control, handleSubmit, getValues, reset, setValue } = useForm<WizardFormData>({
     defaultValues: {
       contract: '',
       clustername: '',
@@ -219,7 +219,9 @@ export const ExampleComponent = () => {
     dependentLoad();
   }, [fetcherVsphere, dcNameTemplate, setValue]);
 
-  const handleNext = () => setActiveStep((prev) => prev + 1);
+  const handleValidNext = () => {
+    setActiveStep((prev) => prev + 1);
+  }
   const handleBack = () => setActiveStep((prev) => prev - 1);
 
   const handleFinish = async () => {
@@ -298,7 +300,7 @@ export const ExampleComponent = () => {
           <Button disabled={activeStep === 0} onClick={handleBack}>
             Indietro
           </Button>
-          <Button variant="contained" color="primary" onClick={activeStep === steps.length - 1 ? handleFinish : handleNext}>
+          <Button variant="contained" color="primary" onClick={activeStep === steps.length - 1 ? handleFinish : handleSubmit(handleValidNext) }>
             {activeStep === steps.length - 1 ? 'Crea' : 'Avanti'}
           </Button>
         </Box>
