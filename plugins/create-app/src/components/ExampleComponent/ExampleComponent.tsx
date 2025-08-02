@@ -15,7 +15,7 @@ import { ProfilesStep } from './steps/ProfilesStep';
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
 
 import { loadInitialFormData } from './api/initialDataApi';
-import { fetchDatacenterOptions, fetchResourcePoolOptions } from './api/getVsphereData';
+import { fetchDatacenterOptions, fetchPoolOptions } from './api/getVsphereData';
 
 const profileOptions = [
   { profilekey: 'fortigate:fabric', profilevalue: 'fabric' },
@@ -179,7 +179,7 @@ export const ExampleComponent = () => {
       setValue('dcname', ''); // Resetta il campo dipendente
 
       try {
-        const options = await fetchDatacenterOptions(fetcherVsphere, dcUrlTemplate, dcUrlTemplate, "DATACENTER");
+        const options = await fetchDatacenterOptions(fetcherVsphere, dcUrlTemplate);
         setDatacenterOptions(options);
       } catch (e) {
         console.log(e);
@@ -204,12 +204,13 @@ export const ExampleComponent = () => {
       //setIsNetworkLoading(true);
       //setNetworkError(null);
       setValue('dcpool', ''); // Resetta il campo dipendente
+      setValue('dcfolder', '');
 
       try {
-        const rpOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
-        setResourcepoolOptions(options);
-        const folderOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
-        setFolderOptions(options);
+        const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate);
+        setResourcepoolOptions(rpOptions);
+        //const folderOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
+        //setFolderOptions(folderOptions);
       } catch (e) {
         console.log(e);
         setResourcepoolOptions([]);

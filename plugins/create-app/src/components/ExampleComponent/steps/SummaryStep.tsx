@@ -1,6 +1,5 @@
 // file: steps/SummaryStep.tsx
 
-import React from 'react';
 import { Box, Typography, Grid, Chip } from '@material-ui/core';
 import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { WizardFormData } from '../ExampleComponent'; // Assicurati che il percorso sia corretto
