@@ -203,10 +203,10 @@ export const ExampleComponent = () => {
       setValue('dcfolder', '');
 
       try {
-        const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'), getValues('dcname'));
+        const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'));
         setResourcepoolOptions(rpOptions);
-        const folderOptions = await fetchFolderOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'), getValues('dcname'));
-        setFolderOptions(folderOptions);
+        const fldOptions = await fetchFolderOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'), getValues('dcname'));
+        setFolderOptions(fldOptions);
       } catch (e) {
         console.log(e);
         setResourcepoolOptions([]);

@@ -51,7 +51,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcUrlTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
                 {selectOptions.datacenterOptions != null && selectOptions.datacenterOptions.map(datacenter => (
-                <MenuItem key="{datacenter.value}" value="{datacenter.value}">{datacenter.value}</MenuItem>
+                <MenuItem key={datacenter.value} value={datacenter.value}>{datacenter.value}</MenuItem>
 	            ))}
               </Select>
             </FormControl>
@@ -71,7 +71,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
                 {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
-                <MenuItem key="{resourcepool.path}" value="{resourcepool.path}">{resourcepool.name}</MenuItem>
+                <MenuItem key={resourcepool.path} value={resourcepool.path}>{resourcepool.name}</MenuItem>
 	            ))}
               </Select>
             </FormControl>)}
@@ -89,7 +89,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 style={{ marginBottom: '24px' }}
             >
                 {selectOptions.folderOptions != null && selectOptions.folderOptions.map(folder => (
-                <MenuItem key="{folder.path}" value="{folder.path}">{folder.name}</MenuItem>
+                <MenuItem key={folder.path} value={folder.path}>{folder.name}</MenuItem>
 	            ))}
               </Select>
             </FormControl>)}

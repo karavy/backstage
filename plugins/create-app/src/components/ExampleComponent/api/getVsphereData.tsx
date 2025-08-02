@@ -20,8 +20,8 @@ export async function fetchDatacenterOptions(fetcher, dcUrl: string) {
   return data;
 }
 
-export async function fetchFolderOptions(fetcher, selectedTemplate, dcUrl: string, filter: string, dcenter: string) {
-    const response = await fetcher.fetch("http://localhost:8080/folders/vm/" + dcUrl + "/" + encodeURIComponent(dcenter) + "/" + filter, {});
+export async function fetchFolderOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string) {
+    const response = await fetcher.fetch("http://localhost:8080/folders/vm/" + dcUrl + "/" + encodeURIComponent(selectedTemplate) + "/" + filter, {});
       
     if (!response.ok) {
         throw new Error(`Errore di rete: ${response.statusText}`);
@@ -32,8 +32,8 @@ export async function fetchFolderOptions(fetcher, selectedTemplate, dcUrl: strin
     return data;
 }
 
-export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string, dcenter: string) {
-    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + encodeURIComponent(dcenter)+ "/" + filter, {});
+export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string) {
+    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + encodeURIComponent(selectedTemplate)+ "/" + filter, {});
       
     if (!response.ok) {
         throw new Error(`Errore di rete: ${response.statusText}`);
