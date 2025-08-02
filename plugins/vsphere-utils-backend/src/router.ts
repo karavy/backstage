@@ -26,25 +26,20 @@ export async function createRouter({
     entityRef: z.string().optional(),
   });
 
-  router.post('/todos', async (req, res) => {
-    const parsed = todoSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw new InputError(parsed.error.toString());
-    }
-
-    const result = await todoListService.createTodo(parsed.data, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-    });
-
-    res.status(201).json(result);
-  });
-
   router.get('/resourcepool/:filter', async (req, res) => {
     res.json(await todoListService.getResourcePools(req.params.filter));
   });
 
-  router.get('/datacenter', async (req, res) => {
-    res.json(await todoListService.getDatacenters({ id: req.params.id }));
+  router.get('/folder/:dcurl/:filter', async (req, res) => {
+    const result = await todoListService.getFolders({ id: req.params.filter, dcurl: req.params.dcurl });
+
+    res.status(201).json(result);
+  });
+
+  router.get('/datacenter/:dcurl', async (req, res) => {
+    const result = await todoListService.getDatacenters({ id: req.params.id, dcurl: req.params.dcurl });
+
+    res.status(201).json(result);
   });
 
   router.get('/storagepolicies', async (req, res) => {

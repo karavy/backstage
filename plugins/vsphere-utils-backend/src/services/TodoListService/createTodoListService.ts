@@ -24,10 +24,10 @@ export async function createTodoListService({
 
   const storedTodos = new Array<TodoItem>();
 
-  async function doVSphereQuery(request: {query: string, queryFilter: string}) {
+  async function doVSphereQuery(request: {query: string, queryFilter: string, dcurl: string}) {
     let apiToken: string | null = null;
     const vcenterConfig = ""//config.getConfig('vcenter');
-    const apiUrl = "https://10.19.6.1" //vcenterConfig.getString('apiUrl');
+    const apiUrl = "https://" + request.dcurl //vcenterConfig.getString('apiUrl');
     const username = "readonly-api-client@vsphere.local"//vcenterConfig.getString('username');
     const password = "4We1OG%KTZ!" //vcenterConfig.getString('password');
     const filterQuery = ""
@@ -96,7 +96,16 @@ export async function createTodoListService({
         });
         logger.info('Sessione vCenter terminata correttamente.');
       }
-      return folders;
+      let transformedData = []
+      
+      if (folders != null) {
+	transformedData = folders.map(item => ({
+  	  value: item.name,
+          name: item.name,
+        }));
+      }
+
+      return transformedData;
     }
   };
 
@@ -109,12 +118,16 @@ export async function createTodoListService({
       return await doVSphereQuery({query: '/rest/vcenter/resource-pool', queryFilter: filter});
     },
 
-    async getDatacenters(request: { id: string }) {
-      return await doVSphereQuery({query: '/rest/vcenter/datacenter', queryFilter: null});
+    async getDatacenters(request: { id: string, dcurl: string }) {
+      return await doVSphereQuery({query: '/rest/vcenter/datacenter', queryFilter: null, dcurl: request.dcurl});
     },
 
     async getNetworks(filter: string) {
       return await doVSphereQuery({query: '/rest/vcenter/network', queryFilter: filter});
+    },
+
+    async getFolders(request: { filter: string, dcurl: string }) {
+      return await doVSphereQuery({query: '/rest/vcenter/folder?filter.type=VIRTUAL_MACHINE', queryFilter: null, dcurl: request.dcurl});
     },
 
   };

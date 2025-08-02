@@ -234,15 +234,15 @@ spec:
           items:
             type: string
             enum: 
-              - "fortigate:fabric",
-              - "loadbalancer:metallb",
-              - "nfs:storage",
-              - "cd:argocd",
-              - "monitoring:persistent",
-              - "nginx-management:ingress",
-              - "nginx-prod:ingress",
-              - "letsencrypt:external-dns",
-              - "dinova-letsencypt:cert-manager",
+              - "fortigate:fabric"
+              - "loadbalancer:metallb"
+              - "nfs:storage"
+              - "cd:argocd"
+              - "monitoring:persistent"
+              - "nginx-management:ingress"
+              - "nginx-prod:ingress"
+              - "letsencrypt:external-dns"
+              - "dinova-letsencypt:cert-manager"
           uniqueItems: true
           title: Applicazioni da installare
           description: Seleziona una o più app

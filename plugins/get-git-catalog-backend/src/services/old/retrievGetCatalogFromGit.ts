@@ -20,7 +20,8 @@ export async function retrievGetCatalogFromGit({
 }): Promise<TodoListService> {
     const gitToken = req.headers['x-clastix-gittoken']
     const gitRepo = req.headers['x-clastix-repo']
-    const repoUrl = "https://nouser:" + gitToken + "@github.com/karavy/" + gitRepo as string;
+    const repoUrl = "https://x-oauth-basic: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@github.com/karavy/" + gitRepo as string;
+    //const repoUrl = "https://x-oauth-basic:" + gitToken + "@github.com/karavy/" + gitRepo as string;
     const tmpDir = path.join('/tmp', Date.now().toString());
 
     try {

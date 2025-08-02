@@ -17,7 +17,7 @@ interface VSphereDcInfoProps {
   control: Control<WizardFormData>;
 }
 
-export const VSphereDcInfo = ({ control, dcNameTemplate, networkOptions }: VSphereDcInfoProps) => {
+export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) => {
   return (
     <Box>
       <Typography variant="h6" gutterBottom>Dettagli del Servizio</Typography>
@@ -48,15 +48,34 @@ export const VSphereDcInfo = ({ control, dcNameTemplate, networkOptions }: VSphe
           	labelId="dcname-select-label"
 	        label="Nome cluster vSphere"
 	        style={{ marginBottom: '24px' }}
-                disabled={!dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
+                disabled={!selectOptions.dcUrlTemplate} // Disabilitato se non c'è selezione o se sta caricando
               >
-              {networkOptions != null && networkOptions.map(network => (
-                <MenuItem key="{network.value}" value="{network.value}">{network.value}</MenuItem>
+              {selectOptions.datacenterOptions != null && selectOptions.datacenterOptions.map(datacenter => (
+                <MenuItem key="{datacenter.value}" value="{datacenter.value}">{datacenter.value}</MenuItem>
 	      ))}
               </Select>
             </FormControl>
 	  )}
 	/>
+        <Controller
+          name="dcpool"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '16px' }}>
+              <InputLabel id="dcpool-select-label">Node Resource Pool</InputLabel>
+              <Select
+                {...field}
+                labelId="dcpool-select-label"
+                label="Node Resource Pool"
+                style={{ marginBottom: '24px' }}
+                disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
+            >
+              {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
+                <MenuItem key="{resourcepool.value}" value="{resourcepool.value}">{resourcepool.value}</MenuItem>
+	      ))}
+              </Select>
+            </FormControl>)}
+        />
 {/*
        <Controller
           name="dcthumbprint"
@@ -105,22 +124,6 @@ export const VSphereDcInfo = ({ control, dcNameTemplate, networkOptions }: VSphe
                 {...field}
                 labelId="dcfolder-select-label"
                 label="Node VM Folder"
-                style={{ marginBottom: '24px' }}
-            >
-                <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>
-              </Select>
-            </FormControl>)}
-        />
-        <Controller
-          name="dcpool"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth style={{ marginBottom: '16px' }}>
-              <InputLabel id="dcpool-select-label">Node Resource Pool</InputLabel>
-              <Select
-                {...field}
-                labelId="dcpool-select-label"
-                label="Node Resource Pool"
                 style={{ marginBottom: '24px' }}
             >
                 <MenuItem value="/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS">VDC KUBERNETES MAGGIOLI SORIS</MenuItem>

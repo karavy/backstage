@@ -73,21 +73,17 @@ export async function createTodoListService({
       const owner = req.params.owner;
       const repo = req.params.repo
 
-      try {
-	if (repoExists("github.com", owner, repo)) {
-  	  try {
-            await git.clone("https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git", tmpDir); //, ["--branch", "1.6"]);
-            console.log("✅ Repository clonato con successo!");
-            const content = await fs.readFile(path.join(tmpDir, 'params.yaml'), 'utf-8');
-            const parsed = yaml.parse(content);
-            res.json(parsed);
-          } catch (error) {
-            console.error(`❌ Errore durante il clone: ${error.message}`);
-            throw error
-          }
+      if (repoExists("github.com", owner, repo)) {
+        try {
+          await git.clone("https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git", tmpDir); //, ["--branch", "1.6"]);
+          console.log("✅ Repository clonato con successo!");
+          const content = await fs.readFile(path.join(tmpDir, 'params.yaml'), 'utf-8');
+          const parsed = yaml.parse(content);
+	  return parsed
+        } catch (error) {
+          console.error(`❌ Errore durante il clone: ${error.message}`);
+          throw error
         }
-      } catch (e) {
-        res.status(500).json({ error: e.message });
       }
     },
   };

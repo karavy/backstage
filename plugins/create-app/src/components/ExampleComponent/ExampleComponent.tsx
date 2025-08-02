@@ -15,7 +15,7 @@ import { ProfilesStep } from './steps/ProfilesStep';
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
 
 import { loadInitialFormData } from './api/initialDataApi';
-import { fetchNetworkOptions } from './api/getVsphereData';
+import { fetchDatacenterOptions, fetchResourcePoolOptions } from './api/getVsphereData';
 
 const profileOptions = [
   { profilekey: 'fortigate:fabric', profilevalue: 'fabric' },
@@ -92,7 +92,9 @@ export const ExampleComponent = () => {
   const fetcherVsphere = useApi(fetchApiRef);
 
   // DEPENDANT SELECT
-  const [networkOptions, setNetworkOptions] = useState([]);
+  const [datacenterOptions, setDatacenterOptions] = useState([]);
+  const [resourcepoolOptions, setResourcepoolOptions] = useState([]);
+  const [folderOptions, setFolderOptions] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -147,27 +149,27 @@ export const ExampleComponent = () => {
     }
   }, [fetcherLoadInitial, entity, owner, reset]);
 
-  const dcNameTemplate = useWatch({
+  const dcUrlTemplate = useWatch({
     control,
     name: 'dcurl',
   });
-  const dcThumbprintTemplate = useWatch({
+  const dcNameTemplate = useWatch({
     control,
     name: 'dcname',
   });
-  const dcPoolTemplate = useWatch({
+  /*const dcPoolTemplate = useWatch({
     control,
     name: 'dcfolder',
   });
   const dcNetworkTemplate = useWatch({
     control,
     name: 'dcnetwork',
-  });
+  });*/
 
   useEffect(() => {
 
-    if (!dcNameTemplate) {
-      setNetworkOptions([]);
+    if (!dcUrlTemplate) {
+      setDatacenterOptions([]);
       return;
     }
 
@@ -177,11 +179,41 @@ export const ExampleComponent = () => {
       setValue('dcname', ''); // Resetta il campo dipendente
 
       try {
-        const options = await fetchNetworkOptions(fetcherVsphere, dcNameTemplate, dcNameTemplate, "DATACENTER");
-        setNetworkOptions(options);
+        const options = await fetchDatacenterOptions(fetcherVsphere, dcUrlTemplate, dcUrlTemplate, "DATACENTER");
+        setDatacenterOptions(options);
       } catch (e) {
         console.log(e);
-        setNetworkOptions([]);
+        setDatacenterOptions([]);
+      } finally {
+        //setIsNetworkLoading(false);
+      }
+    };
+
+    dependentLoad();
+  }, [fetcherVsphere, dcUrlTemplate, setValue]);
+
+  useEffect(() => {
+
+    if (!dcNameTemplate) {
+      setResourcepoolOptions([]);
+      setFolderOptions([]);
+      return;
+    }
+
+    const dependentLoad = async () => {
+      //setIsNetworkLoading(true);
+      //setNetworkError(null);
+      setValue('dcpool', ''); // Resetta il campo dipendente
+
+      try {
+        const rpOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
+        setResourcepoolOptions(options);
+        const folderOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
+        setFolderOptions(options);
+      } catch (e) {
+        console.log(e);
+        setResourcepoolOptions([]);
+        setFolderOptions([]);
       } finally {
         //setIsNetworkLoading(false);
       }
@@ -216,13 +248,21 @@ export const ExampleComponent = () => {
     }
   };
 
+
+  const selectOptions = {
+    dcUrlTemplate: dcUrlTemplate ,
+    dcNameTemplate: dcNameTemplate,
+    datacenterOptions: datacenterOptions,
+    resourcepoolOptions: resourcepoolOptions
+  }
+
   // Funzione per renderizzare lo step corretto
   const getStepContent = (step: number) => {
     switch (step) {
       case 0:
         return <ClusterMainInfo control={control} />;
       case 1:
-        return <VSphereDcInfo control={control} dcNameTemplate={dcNameTemplate} networkOptions={networkOptions}/>;
+        return <VSphereDcInfo control={control} selectOptions={selectOptions} dcUrlTemplate={dcUrlTemplate} datacenterOptions={datacenterOptions}/>;
       case 2:
         return <IpamPoolStep control={control} />;
       case 3:

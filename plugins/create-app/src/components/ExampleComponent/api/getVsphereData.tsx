@@ -1,4 +1,4 @@
-export async function fetchNetworkOptions(fetcher, selectedTemplate, dcUrl, requestedType) {
+export async function fetchDatacenterOptions(fetcher, selectedTemplate, dcUrl, requestedType) {
   // Qui la tua logica per recuperare le opzioni, anche con una vera chiamata API
 //  if (requestedType == "DATACENTER") {
 //   if (dcUrl === "10.19.6.1") {
