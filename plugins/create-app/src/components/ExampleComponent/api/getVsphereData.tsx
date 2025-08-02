@@ -24,8 +24,8 @@ export async function fetchFolderOptions(fetcher, selectedTemplate, dcUrl) {
 
 }
 
-export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string) {
-    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + selectedTemplate, {});
+export async function fetchPoolOptions(fetcher, selectedTemplate: string, dcUrl: string, filter: string) {
+    const response = await fetcher.fetch("http://localhost:8080/resourcepools/" + dcUrl + "/" + filter, {});
       
     if (!response.ok) {
         throw new Error(`Errore di rete: ${response.statusText}`);

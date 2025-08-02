@@ -71,7 +71,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
               {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
-                <MenuItem key="{resourcepool.value}" value="{resourcepool.value}">{resourcepool.value}</MenuItem>
+                <MenuItem key="{resourcepool.path}" value="{resourcepool.path}">{resourcepool.name}</MenuItem>
 	      ))}
               </Select>
             </FormControl>)}

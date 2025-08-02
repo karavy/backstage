@@ -207,7 +207,7 @@ export const ExampleComponent = () => {
       setValue('dcfolder', '');
 
       try {
-        const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate);
+        const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'));
         setResourcepoolOptions(rpOptions);
         //const folderOptions = await fetchDatacenterOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, "DATACENTER");
         //setFolderOptions(folderOptions);
@@ -263,7 +263,7 @@ export const ExampleComponent = () => {
       case 0:
         return <ClusterMainInfo control={control} />;
       case 1:
-        return <VSphereDcInfo control={control} selectOptions={selectOptions} dcUrlTemplate={dcUrlTemplate} datacenterOptions={datacenterOptions}/>;
+        return <VSphereDcInfo control={control} selectOptions={selectOptions} dcUrlTemplate={dcUrlTemplate} datacenterOptions={datacenterOptions} />;
       case 2:
         return <IpamPoolStep control={control} />;
       case 3:
