@@ -1,3 +1,5 @@
+import * as semver from 'semver';
+
 export async function loadInitialFormData(fetcher, owner, entity) {
   const response = await fetcher.fetch("http://localhost:7007/api/get-git-catalog/getrepo/" + owner + "/" + entity, {
   headers: {
@@ -10,7 +12,10 @@ export async function loadInitialFormData(fetcher, owner, entity) {
     throw new Error(`Errore di rete: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  let data = await response.json();
+
+  const newVersion = semver.inc(data.spec.repotag, 'major');
+  data.spec.repotag = newVersion;
 
   // 6. Usa reset() per popolare l'intero form con i dati ricevuti
   if (data && data.spec) {

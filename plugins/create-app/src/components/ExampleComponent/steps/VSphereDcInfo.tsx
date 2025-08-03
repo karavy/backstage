@@ -56,7 +56,28 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
               </Select>
             </FormControl>
 	  )}
-	  />
+	/>
+   	<Controller
+          name="dcthumbprint"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth style={{ marginBottom: '24px' }}>
+              <InputLabel id="dcthumbprint-select-label">Impronta Certificato Cluster vSphere</InputLabel>
+              <Select
+	        {...field}
+                labelId="dcthumbprint-select-label"
+                label="Impronta Certificato Cluster vSphere"
+                style={{ marginBottom: '24px' }}
+                disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
+              >
+              {selectOptions.thumbprintOptions != null && selectOptions.thumbprintOptions.map(thumbprint => (
+                <MenuItem key={thumbprint.sha256} value={thumbprint.sha256}>{thumbprint.name}</MenuItem>
+	      ))}
+             </Select>
+            </FormControl>
+	  )}
+	/>
+
         <Controller
           name="dcpool"
           control={control}
@@ -94,28 +115,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
               </Select>
             </FormControl>)}
         />
-{/*
-       <Controller
-          name="dcthumbprint"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth style={{ marginBottom: '24px' }}>
-              <InputLabel id="dcthumbprint-select-label">Impronta Certificato Cluster vSphere</InputLabel>
-              <Select
-	        {...field}
-                labelId="dcthumbprint-select-label"
-                label="Impronta Certificato Cluster vSphere"
-                style={{ marginBottom: '24px' }}
-                disabled={!dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
-                //disabled={!selectedTemplate || isLoading} // Disabilitato se non c'è selezione o se sta caricando
-                //endAdornment={isLoading && <CircularProgress size={20} style={{ marginRight: '16px' }} />}
-              >
-              {networkOptions != null && networkOptions.map(network => (
-                <MenuItem key="{network.value}" value="{network.value}">{network.value}</MenuItem>
-	      ))}
-             </Select>
-            </FormControl>)}
-	    />
+	{/* DA QUI IN POI ANCORA DA FARE */}
         <Controller
           name="dccredsecret"
           control={control}
@@ -181,7 +181,6 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
               </Select>
             </FormControl>)}
         />
-*/}
     </Box>
   );
 };

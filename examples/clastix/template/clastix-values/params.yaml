@@ -16,22 +16,22 @@ spec:
   dcurl: ${{ values.dcurl }}
   dcthumbprint: ${{ values.dcthumbprint }}
   dccredsecret: ${{ values.dccredsecret }}
-  dcfolder: ${{ values.dcnodefolder }}
-  dcnodepool: ${{ values.dcnodepool }}
-  dcstorage: ${{ values.dcnodestoragepolicy }}
-  dcvmtemplate: ${{ values.dcnodevmtemplate }}
-  dcnetwork: ${{ values.dcnodenetwork }}
+  dcpool: ${{ values.dcpool }}
+  dcfolder: ${{ values.dcfolder }}
+  dcstorage: ${{ values.dcstorage }}
+  dcnetwork: ${{ values.dcnetwork }}
+  dcvmtemplate: ${{ values.dcvmtemplate }}
 
   ipampool: 
 {% for ranges in values.ipampoolranges %}
     - rangestart: ${{ ranges.rangestart }}
       rangeend: ${{ ranges.rangeend }}
-      prefix: ${{ values.ipamrangeprefix }}
-      gateway: ${{ values.ipamrangegw }}
-      ipamname: ${{ values.ipampoolname }}
+      prefix: ${{ values.prefix }}
+      gateway: ${{ values.gateway }}
+      ipamname: ${{ values.ipamname }}
 {% endfor %}
   nodesinfo: 
-{%- for ninfo in values.nodeinfo %}
+{%- for ninfo in values.nodesinfo %}
     - nodename: ${{ ninfo.nodename }}
       replicas: ${{ ninfo.replicas  }}
       cpu: ${{ ninfo.cpu }}

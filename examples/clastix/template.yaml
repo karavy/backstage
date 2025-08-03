@@ -65,123 +65,92 @@ spec:
         - dcurl
         - dcthumbprint
         - dccredsecret
-        - dcnodepool
-        - dcnodefolder
-        - dcnodestoragepolicy
-        - dcnodevmtemplate
-        - dcnodenetwork
+        - dcpool
+        - dcfolder
+        - dcstorage
+        - dcvmtemplate
+        - dcnetwork
       properties:
         dcname:
           title: Datacenter Name
           type: string
           description: Scegli l'ambiente di deploy
-          enum:
-            - "EDA - Datacenter Elogic A - Produzione"
-          ui:widget: select
         dcurl:
           title: Datacenter URL
           type: string
           description: Scegli l'ambiente di deploy
-          enum:
-            - "10.19.6.1"
-          ui:widget: select
         dcthumbprint:
           title: Datacenter Thumbprint
           type: string
           description: Scegli l'ambiente di deploy
-          enum:
-            - "2D:91:19:B3:27:30:02:CE:C0:38:CF:77:EF:1B:E6:A8:4B:9C:BB:D6:C5:59:DD:6B:6C:DF:F2:65:83:24:C1:96"
         dccredsecret:
           title: Datacenter Credential Secret
           type: string
           description: Scegli l'ambiente di deploy
-          enum:
-            - "vsphere-cluster-identity"
-        dcnodefolder:
+        dcfolder:
           title: Datacenter Node Folder
           type: string
           description: Scegli la folder di destinazione del nodo
-          enum:
-            - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-          ui:widget: select
-        dcnodepool:
+        dcpool:
           title: Datacenter Node Resource Pool
           type: string
           description: Scegli il pool di destinazione del nodo
-          enum:
-            - "/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
-          ui:widget: select
-        dcnodestoragepolicy:
+        dcstorage:
           title: Datacenter Node Storage Policy
           type: string
           description: Scegli la storage policy di destinazione del nodo
-          enum:
-            - "DATA4_ENT-PLUS_K8S"
-          ui:widget: select
-        dcnodevmtemplate:
+        dcvmtemplate:
           title: Datacenter Node VM Template
           type: string
           description: Scegli il template per la vm del nodo
-          enum:
-            - "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
-          ui:widget: select
-        dcnodenetwork:
+        dcnetwork:
           title: Datacenter Node Network
           type: string
           description: Scegli la network per la vm del nodo
-          enum:
-            - "/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
-          ui:widget: select
 
     - title: Get IPAM info
       required:
-        - ipampoolname
-        - ipampoolrange
-        - ipamrangeprefix
-        - ipamrangegw
+        - ipampool
       properties:
-        ipampoolname:
-          title: Name
-          type: string
-          description: IPAM Provider Name
-        ipamrangeprefix:
-          title: Prefix
-          type: integer
-          description: IPAM Provier Prefix
-        ipamrangegw:
-          title: Gateway
-          type: string
-          description: IPAM Provider Gateway
-          pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
-        ipampoolrange:
+        ipampool:
           # range è una lista, posso avere range su reti diverse? Se sì, come specifico i gw?
           title: IPAM ranges
           type: array
           description: Required storage for db
           items:
             type: object
-            required: [rangestart, rangeend]
+            required: [ipamname, prefix, gateway, rangestart, rangeend]
             properties:
+              ipamname:
+                title: Name
+                type: string
+                description: IPAM Provider Name
+              prefix:
+                title: Prefix
+                type: integer
+                description: IPAM Provier Prefix
+              gateway:
+                title: Gateway
+                type: string
+                description: IPAM Provider Gateway
               rangestart:
                 type: string
                 title: Range First Address
-                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
               rangeend:
                 type: string
                 title: Range Last Address
-                pattern: '^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$'
 
     - title: Get Nodes Info
       required:
-        - nodeinfo
+        - nodesinfo
       properties:
-        nodeinfo:
+        nodesinfo:
           title: Node Types and Info
           type: array
           description: Required storage for db
           items:
             type: object
-            required: [nodename, replicas, cpu, ram, disk]
+            required: [nodename, replicas, cpu, mbram, gbdisk]
             properties:
               nodename:
                 type: string
@@ -192,10 +161,10 @@ spec:
               cpu:
                 type: integer
                 title: Numero CPU
-              ram:
+              mbram:
                 type: integer
                 title: Memory in MiB
-              disk:
+              gbdisk:
                 type: integer
                 title: Disk Size
               labels:
@@ -225,32 +194,21 @@ spec:
                       type: string
                       title: Value
 
-    - title: Select Sveltos Apps
-      required:
-        - sveltosapps
-      properties:
-        sveltosapps:
-          type: array
-          items:
-            type: string
-            enum: 
-              - "fortigate:fabric"
-              - "loadbalancer:metallb"
-              - "nfs:storage"
-              - "cd:argocd"
-              - "monitoring:persistent"
-              - "nginx-management:ingress"
-              - "nginx-prod:ingress"
-              - "letsencrypt:external-dns"
-              - "dinova-letsencypt:cert-manager"
-          uniqueItems: true
-          title: Applicazioni da installare
-          description: Seleziona una o più app
+#    - title: Select Sveltos Apps
+#      required:
+#        - sveltosapps
+#      properties:
+#        sveltosapps:
+#          type: array
+#          items:
+#            type: string
+#          title: Applicazioni da installare
+#          description: Seleziona una o più app
 
     - title: Choose a location
       required:
         - repoUrl
-        - newTagName
+        - repotag
       properties:
         repoUrl:
           title: Repository Location
@@ -259,7 +217,7 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
-        newTagName:
+        repotag:
           title: Nome del nuovo tag
           type: string
           description: Il nome per il nuovo branch (es. feature/mio-componente).
@@ -288,8 +246,9 @@ spec:
           ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
           ipamrangegw: ${{ parameters.ipamrangegw }}
           ipampoolname: ${{ parameters.ipampoolname }}
-          nodeinfo: ${{ parameters.nodeinfo }}
-          sveltosapps: ${{ parameters.sveltosapps }}
+          nodesinfo: ${{ parameters.nodesinfo }}
+          #sveltosapps: ${{ parameters.sveltosapps }}
+          repotag: ${{ parameters.repotag }}
 
     - id: fetch-base
       name: Fetch Base
@@ -313,15 +272,15 @@ spec:
           ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
           ipamrangegw: ${{ parameters.ipamrangegw }}
           ipampoolname: ${{ parameters.ipampoolname }}
-          nodeinfo: ${{ parameters.nodeinfo }}
-          sveltosapps: ${{ parameters.sveltosapps }}
+          nodesinfo: ${{ parameters.nodesinfo }}
+          #sveltosapps: ${{ parameters.sveltosapps }}
 
     - id: apri-pr
       name: Apri Pull Request
       action: github:createmerge
       input:
         repoUrl: ${{ parameters.repoUrl }}
-        tagName: ${{ parameters.newTagName }}
+        tagName: ${{ parameters.repotag }}
         title: 'feat: Aggiornamento dal template Backstage'
         description: 'Questa PR contiene gli aggiornamenti generati dal template.'
         sourcePath: ./repo-esistente

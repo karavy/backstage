@@ -13,9 +13,15 @@ import { NodesInfoStep} from './steps/NodesInfoStep';
 import { ProfilesStep } from './steps/ProfilesStep';
 
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api'; // 2. Importa le API di Backstage
+import { scaffolderApiRef } from '@backstage/plugin-scaffolder-react';
 
 import { loadInitialFormData } from './api/initialDataApi';
-import { fetchDatacenterOptions, fetchPoolOptions, fetchFolderOptions } from './api/getVsphereData';
+import { 
+  fetchDatacenterOptions, 
+  fetchPoolOptions, 
+  fetchFolderOptions,
+  fetchThumbprintOptions
+} from './api/getVsphereData';
 
 const profileOptions = [
   { profilekey: 'fortigate:fabric', profilevalue: 'fabric' },
@@ -32,6 +38,7 @@ const profileOptions = [
 // Definiamo un tipo per l'intero stato del nostro form
 export interface WizardFormData {
   // Primo step
+  repotag: string;
   contract: string;
   clustername: string;
   clusterdomain: string;
@@ -61,7 +68,7 @@ export interface WizardFormData {
     rangeend: string;
   }[];
 
-  profilelabels: string[];
+  sveltosapps: string[];
 
   nodesinfo: {
     nodename: string;
@@ -95,6 +102,7 @@ export const ExampleComponent = () => {
   const [datacenterOptions, setDatacenterOptions] = useState([]);
   const [resourcepoolOptions, setResourcepoolOptions] = useState([]);
   const [folderOptions, setFolderOptions] = useState([]);
+  const [thumbprintOptions, setThumbprintOptions] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -103,6 +111,7 @@ export const ExampleComponent = () => {
   // Stato centrale per tutti i dati del wizard
   const { control, handleSubmit, getValues, reset, setValue } = useForm<WizardFormData>({
     defaultValues: {
+      repotag: '',
       contract: '',
       clustername: '',
       clusterdomain: '',
@@ -126,7 +135,7 @@ export const ExampleComponent = () => {
 
       nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50,  nodelabels: [] , nodetaints: []}],
 
-      profilelabels: []
+      sveltosapps: [],
     },
   });
 
@@ -157,6 +166,7 @@ export const ExampleComponent = () => {
     control,
     name: 'dcname',
   });
+
   /*const dcNetworkTemplate = useWatch({
     control,
     name: 'dcnetwork',
@@ -193,6 +203,7 @@ export const ExampleComponent = () => {
     if (!dcNameTemplate) {
       setResourcepoolOptions([]);
       setFolderOptions([]);
+      setThumbprintOptions([]);
       return;
     }
 
@@ -201,16 +212,20 @@ export const ExampleComponent = () => {
       //setNetworkError(null);
       setValue('dcpool', ''); // Resetta il campo dipendente
       setValue('dcfolder', '');
+      setValue('dcthumbprint', '');
 
       try {
         const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'));
         setResourcepoolOptions(rpOptions);
         const fldOptions = await fetchFolderOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'), getValues('dcname'));
         setFolderOptions(fldOptions);
+        const thumbOptions = await fetchThumbprintOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'), getValues('dcname'));
+        setThumbprintOptions(thumbOptions);
       } catch (e) {
         console.log(e);
         setResourcepoolOptions([]);
         setFolderOptions([]);
+        setThumbprintOptions([]);
       } finally {
         //setIsNetworkLoading(false);
       }
@@ -223,6 +238,8 @@ export const ExampleComponent = () => {
     setActiveStep((prev) => prev + 1);
   }
   const handleBack = () => setActiveStep((prev) => prev - 1);
+
+  const scaffolderApi = useApi(scaffolderApiRef);
 
   const handleFinish = async () => {
     const values = getValues();
@@ -254,6 +271,7 @@ export const ExampleComponent = () => {
     datacenterOptions: datacenterOptions,
     resourcepoolOptions: resourcepoolOptions,
     folderOptions: folderOptions,
+    thumbprintOptions: thumbprintOptions,
   }
 
   // Funzione per renderizzare lo step corretto
@@ -262,7 +280,7 @@ export const ExampleComponent = () => {
       case 0:
         return <ClusterMainInfo control={control} />;
       case 1:
-        return <VSphereDcInfo control={control} selectOptions={selectOptions} dcUrlTemplate={dcUrlTemplate} datacenterOptions={datacenterOptions} />;
+        return <VSphereDcInfo control={control} selectOptions={selectOptions} />;
       case 2:
         return <IpamPoolStep control={control} />;
       case 3:
@@ -282,6 +300,11 @@ export const ExampleComponent = () => {
 
   if (isLoading) return <Progress />
 
+  const onValidationErrors = (validationErrors) => {
+    console.error('La validazione è fallita! Errori:', validationErrors);
+    // Qui vedrai esattamente quale campo sta causando il problema
+  };
+
   return (
     <Page themeId="tool">
       <Header title="Wizard con Stato Condiviso" />
@@ -300,7 +323,7 @@ export const ExampleComponent = () => {
           <Button disabled={activeStep === 0} onClick={handleBack}>
             Indietro
           </Button>
-          <Button variant="contained" color="primary" onClick={activeStep === steps.length - 1 ? handleFinish : handleSubmit(handleValidNext) }>
+          <Button variant="contained" color="primary" onClick={activeStep === steps.length - 1 ? handleSubmit(handleFinish, onValidationErrors) : handleSubmit(handleValidNext) }>
             {activeStep === steps.length - 1 ? 'Crea' : 'Avanti'}
           </Button>
         </Box>

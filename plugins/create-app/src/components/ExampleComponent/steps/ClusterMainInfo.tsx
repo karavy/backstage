@@ -27,6 +27,23 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
 
       {/* 3. Ogni TextField è ora avvolto da un Controller */}
      <Controller
+        name="repotag"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Versione Configurazione Cluster"
+            variant="outlined"
+            fullWidth
+            style={{ marginBottom: '24px' }}
+	    InputProps={{
+              readOnly: true,
+      	    }}
+          />
+        )}
+     />
+
+     <Controller
         name="contract"
         control={control}
 	rules={{ required: 'Il nome del cluster è obbligatorio.' }}
@@ -145,6 +162,7 @@ export const ClusterMainInfo = ({ control }: ClusterMainInfoProps) => {
             label="Versione Kubernetes"
             variant="outlined"
             fullWidth
+	    type="text"
             error={!!fieldState.error}  // 👈 mostra bordo rosso se errore
             helperText={fieldState.error?.message}
             style={{ marginBottom: '24px' }}

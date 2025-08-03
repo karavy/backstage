@@ -13,6 +13,7 @@ import simpleGit from 'simple-git';
 import fs from 'fs/promises';
 import yaml from 'yaml';
 import { Octokit } from 'octokit';
+import * as semver from 'semver';
 
 // TEMPLATE NOTE:
 // This is a simple in-memory todo list store. It is recommended to use a
@@ -38,7 +39,6 @@ export async function createTodoListService({
   const storedTodos = new Array<TodoItem>();
   const git = simpleGit();
   const token = githubCredentialsProvider.providers.get('github.com').token;
-
 
   async function repoExists (host: string, owner: string, repo: string) {
     //const { host, owner, repo } = parseRepoUrl(repoUrl, integrations);
@@ -75,7 +75,19 @@ export async function createTodoListService({
 
       if (repoExists("github.com", owner, repo)) {
         try {
-          await git.clone("https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git", tmpDir); //, ["--branch", "1.6"]);
+	  const repoUrl = "https://x-oauth-basic:" + token  + "@" + host + "/" + owner + "/" + repo + ".git"
+  	  const remoteTagsOutput = await git.listRemote(['--tags', repoUrl]);
+	  const tagNames = remoteTagsOutput
+          	.split('\n')
+          	.map(line => line.split('refs/tags/')[1]) // Estrae il nome del tag
+          	.filter(Boolean) // Rimuove eventuali righe vuote o non valide
+		.filter(name => !name.endsWith('^{}'))
+		.filter(tag => {
+    			return tag && !tag.endsWith('^{}') && semver.valid(tag);
+  		});
+	  const highestTag = tagNames.sort(semver.rcompare);
+
+          await git.clone(repoUrl, tmpDir, ["--branch", highestTag[0]]);
           console.log("✅ Repository clonato con successo!");
           const content = await fs.readFile(path.join(tmpDir, 'params.yaml'), 'utf-8');
           const parsed = yaml.parse(content);

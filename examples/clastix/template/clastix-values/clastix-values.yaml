@@ -32,6 +32,7 @@ spec:
         name: ${{ values.dccredsecret }} #vsphere-cluster-identity
 
     ipamProvider:
+{%- for ranges in values.ipampool %}
       # -- Enable the IPAMProvider usage
       enabled: true
       # -- IPAMProvider API group
@@ -39,17 +40,16 @@ spec:
       # -- IPAMProvider kind: InClusterIPPool or GlobalInClusterIPPool
       kind: InClusterIPPool
       # -- IPAMProvider name
-      name: ${{ values.pampoolname }} #ipam-ip-pool
+      name: ${{ ranges.ipamname }} #ipam-ip-pool
       # -- IPAMProvider ranges
       ranges:
-{%- for ranges in values.ipampoolranges %}
         - ${{ ranges.rangestart }}-${{ ranges.rangeend }}
-{% endfor -%}
         #- "10.10.119.51-10.10.119.150"
       # -- IPAMProvider prefix
-      prefix: ${{ values.ipamrangeprefix }} #"24"
+      prefix: ${{ ranges.prefix }} #"24"
       # -- IPAMProvider gateway
-      gateway: ${{ values.ipamrangegw }} #"10.10.119.1"
+      gateway: ${{ ranges.gateway }} #"10.10.119.1"
+{% endfor -%}
 
     cluster:
       # -- Cluster name. If unset, the release name will be used
@@ -137,7 +137,7 @@ spec:
           namespace: monitoring-system
 
     nodePools:
-{%- for ninfo in values.nodeinfo %}
+{%- for ninfo in values.nodesinfo %}
       # Node Pool configuration
       - name: ${{ ninfo.nodename }}
         additionalCloudInitFiles: |
@@ -149,16 +149,16 @@ spec:
         #dataStore: "SANEDAE1090-001_LUN58"
         #dataStore: ""
         # -- VSphere folder to store VMs
-        folder: "${{ ninfo.dcnodefolder }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        folder: "${{ values.dcfolder }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
         # -- VSphere resource pool to use
-        resourcePool: "${{ ninfo.dcnodepool }}" #"/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
+        resourcePool: "${{ values.dcpool }}" #"/EDA - Datacenter Elogic A - Produzione/host/ClusterEDA01-NSXT/Resources/CNT.24.0238.04 - VDC KUBERNETES MAGGIOLI SORIS"
         # -- VSphere storage policy to use
-        storagePolicyName: "${{ ninfo.dcnodestoragepolicy }}" #"DATA4_ENT-PLUS_K8S"
+        storagePolicyName: "${{ values.dcstorage }}" #"DATA4_ENT-PLUS_K8S"
         # -- VSphere template to clone
         #template: "/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/ELOGIC/Developement CAPI/ubuntu-2204-kube-v1.30.0"
-        template: "${{ ninfo.dcnodevmtemplate }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
+        template: "${{ values.dcvmtemplate }}" #"/EDA - Datacenter Elogic A - Produzione/vm/Kubernetes Environments/CNT.24.0263.01 - VDC MYMEMO/ubuntu-2404-kube-v1.31.0"
         # -- VSphere network for VMs and CSI
-        network: "${{ ninfo.dcnodenetwork }}" #"/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
+        network: "${{ values.dcnetwork }}" #"/EDA - Datacenter Elogic A - Produzione/network/SORIS-COLL-K8S-f3ea44d0-ce69-4f9f-8691-d96c621375e4"
         # -- Number of worker VMs instances
         replicas: ${{ ninfo.replicas  }}
         # -- Taints to add to the node pool when joining the cluster
@@ -172,9 +172,9 @@ spec:
           ${{ label.key }}: ${{ label.value }}
   {%- endfor %}
         # -- Disk size of VM in GiB
-        diskGiB: ${{ ninfo.disk }}
+        diskGiB: ${{ ninfo.gbdisk }}
         # -- Memory to allocate to worker VMs
-        memoryMiB: ${{ ninfo.ram }}
+        memoryMiB: ${{ ninfo.mbram }}
         # -- Number of vCPUs to allocate to worker instances
         numCPUs: ${{ ninfo.cpu }}
         # -- Use dhcp for ipv4 configuration
