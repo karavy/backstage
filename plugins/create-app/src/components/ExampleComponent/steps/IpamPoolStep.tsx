@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { TextField, Button, Box, IconButton, Paper, FormControl } from '@material-ui/core';
+import { MenuItem, TextField, Button, Box, IconButton, Paper, FormControl, InputLabel, Select } from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import DeleteIcon from '@material-ui/icons/Delete';
 
@@ -8,13 +8,13 @@ interface IpamPoolStepProps {
   control: Control<WizardFormData>;
 }
 
-export const IpamPoolStep = ({ control }: IpamPoolStepProps) => {
+export const IpamPoolStep = ({ control, prefixOptions }: IpamPoolStepProps) => {
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'ipampool',
   });
-  
+
   return (
     <Box>
       {fields.map((item, index) => (
@@ -28,14 +28,26 @@ export const IpamPoolStep = ({ control }: IpamPoolStepProps) => {
                 <TextField {...field} label="Nome Pool" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
               )}
             />
-            <Controller
+
+	    <Controller
               name={`ipampool.${index}.prefix`}
               control={control}
-	      defaultValue={item.prefix}
               render={({ field }) => (
-                <TextField {...field} label="Prefisso Pool" variant="outlined" style={{ flex: 1, marginRight: '16px' }} />
+                <FormControl fullWidth style={{ flex: 1, margin: '16px' }}>
+                  <InputLabel id="prefix-select-label">Prefisso IPAM</InputLabel>
+                  <Select
+                    {...field}
+                    labelId="prefix-select-label"
+                    label="Prefisso IPAM pool"
+                    style={{ flex: 1, marginBottom: '16px' }}
+                  >
+                    {prefixOptions != null && prefixOptions.map(prefix => (
+                      <MenuItem key={prefix} value={prefix}>{prefix}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               )}
-            />
+	    />
             <Controller
               name={`ipampool.${index}.gateway`}
               control={control}

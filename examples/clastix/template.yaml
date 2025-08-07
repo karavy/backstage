@@ -242,12 +242,17 @@ spec:
           dcurl: ${{ parameters.dcurl }}
           dcthumbprint: ${{ parameters.dcthumbprint }}
           dccredsecret: ${{ parameters.dccredsecret }}
-          ipampoolranges: ${{ parameters.ipampoolrange }}
+          dcpool: ${{ parameters.dcpool }}
+          dcfolder: ${{ parameters.dcfolder }}
+          dcstorage: ${{ parameters.dcstorage }}
+          dcnetwork: ${{ parameters.dcnetwork }}
+          dcvmtemplate: ${{ parameters.dcvmtemplate }}
+          ipampool: ${{ parameters.ipampool }}
           ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
           ipamrangegw: ${{ parameters.ipamrangegw }}
           ipampoolname: ${{ parameters.ipampoolname }}
           nodesinfo: ${{ parameters.nodesinfo }}
-          #sveltosapps: ${{ parameters.sveltosapps }}
+          sveltosapps: ${{ parameters.sveltosapps }}
           repotag: ${{ parameters.repotag }}
 
     - id: fetch-base
@@ -268,12 +273,17 @@ spec:
           dcurl: ${{ parameters.dcurl }}
           dcthumbprint: ${{ parameters.dcthumbprint }}
           dccredsecret: ${{ parameters.dccredsecret }}
-          ipampoolranges: ${{ parameters.ipampoolrange }}
+          dcpool: ${{ parameters.dcpool }}
+          dcfolder: ${{ parameters.dcfolder }}
+          dcstorage: ${{ parameters.dcstorage }}
+          dcnetwork: ${{ parameters.dcnetwork }}
+          dcvmtemplate: ${{ parameters.dcvmtemplate }}
+          ipampool: ${{ parameters.ipampool }}
           ipamrangeprefix: ${{ parameters.ipamrangeprefix }}
           ipamrangegw: ${{ parameters.ipamrangegw }}
           ipampoolname: ${{ parameters.ipampoolname }}
           nodesinfo: ${{ parameters.nodesinfo }}
-          #sveltosapps: ${{ parameters.sveltosapps }}
+          sveltosapps: ${{ parameters.sveltosapps }}
 
     - id: apri-pr
       name: Apri Pull Request

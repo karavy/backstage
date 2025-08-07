@@ -28,7 +28,7 @@ export const ProfilesStep = ({ control, options }: ProfilesStepProps) => {
     <Box>
       <Typography variant="h6" gutterBottom>Seleziona Profili</Typography>
       <Controller
-        name="profilelabels"
+        name="sveltosapps"
         control={control}
         render={({ field }) => (
           <FormControl variant="outlined" fullWidth>
@@ -51,7 +51,7 @@ export const ProfilesStep = ({ control, options }: ProfilesStepProps) => {
             >
               {/* Il menu mostra il valore, ma al click salva la chiave */}
               {options.map(option => (
-                <MenuItem key={option.profilekey} value={option.profilevalue}>
+                <MenuItem key={option.profilekey} value={option.profilekey}>
 		  {option.profilekey}
                 </MenuItem>
               ))}

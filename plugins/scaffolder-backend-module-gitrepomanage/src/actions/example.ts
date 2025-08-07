@@ -75,7 +75,7 @@ export const createExampleAction = (options: {
         // --- FLUSSO 1: IL REPO NON ESISTE ---
         console.log(`Il repository ${owner}/${repo} non esiste. Verrà creato...`);
 	const response = await octokit.rest.repos.createForAuthenticatedUser({
-          name: "deleteme",
+          name: repo,
           description: "My first repository created with Octokit!",
           private: false, // Set to true for a private repository
         });

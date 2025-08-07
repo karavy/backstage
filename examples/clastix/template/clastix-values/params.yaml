@@ -3,32 +3,33 @@ kind: ClastixParams
 metadata:
   name: ${{ values.clustername }}
 spec:
+  repotag: ${{ values.repotag }}
   contract: ${{ values.contract }}
   clustername: ${{ values.clustername }}
   clusterdomain: ${{ values.clusterdomain }}
   apiserverip: ${{ values.apiserverip }}
   cpreplicas: ${{ values.cpreplicas }}
-  datastore: ${{ values.datastore }}
-  k8sversion: ${{ values.k8sversion }}
-  gatewayip: ${{ values.gatewayip }}
+  datastore: "${{ values.datastore }}"
+  k8sversion: "${{ values.k8sversion }}"
+  gatewayip: "${{ values.gatewayip }}"
 
-  dcname: ${{ values.dcname }}
-  dcurl: ${{ values.dcurl }}
-  dcthumbprint: ${{ values.dcthumbprint }}
-  dccredsecret: ${{ values.dccredsecret }}
-  dcpool: ${{ values.dcpool }}
-  dcfolder: ${{ values.dcfolder }}
-  dcstorage: ${{ values.dcstorage }}
-  dcnetwork: ${{ values.dcnetwork }}
-  dcvmtemplate: ${{ values.dcvmtemplate }}
+  dcname: "${{ values.dcname }}"
+  dcurl: "${{ values.dcurl }}"
+  dcthumbprint: "${{ values.dcthumbprint }}"
+  dccredsecret: "${{ values.dccredsecret }}"
+  dcpool: "${{ values.dcpool }}"
+  dcfolder: "${{ values.dcfolder }}"
+  dcstorage: "${{ values.dcstorage }}"
+  dcnetwork: "${{ values.dcnetwork }}"
+  dcvmtemplate: "${{ values.dcvmtemplate }}"
 
   ipampool: 
-{% for ranges in values.ipampoolranges %}
+{% for ranges in values.ipampool %}
     - rangestart: ${{ ranges.rangestart }}
       rangeend: ${{ ranges.rangeend }}
-      prefix: ${{ values.prefix }}
+      prefix: "${{ values.prefix }}"
       gateway: ${{ values.gateway }}
-      ipamname: ${{ values.ipamname }}
+      ipamname: "${{ values.ipamname }}"
 {% endfor %}
   nodesinfo: 
 {%- for ninfo in values.nodesinfo %}
@@ -42,7 +43,6 @@ spec:
         - taintkey: ${{ taint.key }}
           taintvalue: ${{ taint.value }}
   {%- endfor -%}
-        # -- Labels to add to the node pool when joining the cluster
       nodelabels:
   {% for label in ninfo.labels -%}
         - labelkey: ${{ label.key }}
@@ -51,6 +51,6 @@ spec:
       sveltosapps:
   {% for app in values.sveltosapps -%}
         - ${{ app }}
-  {%- endfor -%}
+  {% endfor -%}
 {% endfor %}
 

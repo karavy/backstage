@@ -35,6 +35,8 @@ const profileOptions = [
   { profilekey: 'dinova-letsencypt:cert-manager', profilevalue: 'cert-manager' },
 ];
 
+const prefixOptions = Array.from({ length: 32 }, (_, i) => i + 1);
+
 // Definiamo un tipo per l'intero stato del nostro form
 export interface WizardFormData {
   // Primo step
@@ -62,7 +64,7 @@ export interface WizardFormData {
 
   ipampool: { 
     ipamname: string;
-    prefix: number;
+    prefix: string;
     gateway: string;
     rangestart: string;
     rangeend: string;
@@ -85,6 +87,8 @@ export interface WizardFormData {
       taintvalue: string;
     }[];
   }[];
+
+  repoUrl: string;
 }
 
 const steps = ['Informazioni Principali Cluster', 'Informazione vSphere Datacenter', 'Tenant Cluster IPAM', 'Definizione Nodi Tenant', 'Profili da Abilitare', 'Riepilogo'];
@@ -107,9 +111,9 @@ export const ExampleComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   // FINO QUI
-
+  
   // Stato centrale per tutti i dati del wizard
-  const { control, handleSubmit, getValues, reset, setValue } = useForm<WizardFormData>({
+  const { control, handleSubmit, getValues, reset, setValue, watch } = useForm<WizardFormData>({
     defaultValues: {
       repotag: '',
       contract: '',
@@ -136,6 +140,7 @@ export const ExampleComponent = () => {
       nodesinfo: [{ nodename: '', replicas: 0, cpu: 1, mbram: 4096, gbdisk: 50,  nodelabels: [] , nodetaints: []}],
 
       sveltosapps: [],
+      repoUrl: '',
     },
   });
 
@@ -152,6 +157,7 @@ export const ExampleComponent = () => {
           // Gestisci l'errore, magari con una notifica
         } finally {
           setIsLoading(false);
+	  setValue('repoUrl', "github.com?owner=" + owner  + "&repo=" + entity);
         }
       };
       initialLoad();
@@ -166,11 +172,10 @@ export const ExampleComponent = () => {
     control,
     name: 'dcname',
   });
-
-  /*const dcNetworkTemplate = useWatch({
+  const clusterNameTemplate = useWatch({
     control,
-    name: 'dcnetwork',
-  });*/
+    name: 'clustername'
+  })
 
   useEffect(() => {
 
@@ -182,7 +187,7 @@ export const ExampleComponent = () => {
     const dependentLoad = async () => {
       //setIsNetworkLoading(true);
       //setNetworkError(null);
-      setValue('dcname', ''); // Resetta il campo dipendente
+      //setValue('dcname', ''); // Resetta il campo dipendente
 
       try {
         const options = await fetchDatacenterOptions(fetcherVsphere, dcUrlTemplate);
@@ -199,6 +204,10 @@ export const ExampleComponent = () => {
   }, [fetcherVsphere, dcUrlTemplate, setValue]);
 
   useEffect(() => {
+      setValue('repoUrl', "github.com?owner=" + owner  + "&repo=" + getValues('clustername'));
+  }, [clusterNameTemplate]);
+
+  useEffect(() => {
 
     if (!dcNameTemplate) {
       setResourcepoolOptions([]);
@@ -210,9 +219,9 @@ export const ExampleComponent = () => {
     const dependentLoad = async () => {
       //setIsNetworkLoading(true);
       //setNetworkError(null);
-      setValue('dcpool', ''); // Resetta il campo dipendente
-      setValue('dcfolder', '');
-      setValue('dcthumbprint', '');
+      //setValue('dcpool', ''); // Resetta il campo dipendente
+      //setValue('dcfolder', '');
+      //setValue('dcthumbprint', '');
 
       try {
         const rpOptions = await fetchPoolOptions(fetcherVsphere, dcNameTemplate, dcUrlTemplate, getValues('contract'));
@@ -246,7 +255,7 @@ export const ExampleComponent = () => {
 
     // Definisci il riferimento al tuo template come registrato nel catalogo
     const templateRef = 'template:default/clastix-new-cluster';
-
+console.log(values);
     try {
       // Lancia il processo di scaffolding
       const { taskId } = await scaffolderApi.scaffold({
@@ -282,7 +291,7 @@ export const ExampleComponent = () => {
       case 1:
         return <VSphereDcInfo control={control} selectOptions={selectOptions} />;
       case 2:
-        return <IpamPoolStep control={control} />;
+        return <IpamPoolStep control={control} prefixOptions={prefixOptions}/>;
       case 3:
         return <NodesInfoStep control={control} />;
       case 4:

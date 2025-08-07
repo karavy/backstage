@@ -102,6 +102,7 @@ export const SummaryStep = ({ formData, profileOptions }: SummaryStepProps) => {
           <KeyValue label="Datacenter URL" value={formData.dcurl} />
           <KeyValue label="Certificate Thumbprint" value={formData.dcthumbprint} />
           <KeyValue label="Datacenter Credential Secret" value={formData.dccred} />
+          <KeyValue label="Datacenter VM Folders" value={formData.dcfolder} />
         </Grid>
       </InfoCard>
 

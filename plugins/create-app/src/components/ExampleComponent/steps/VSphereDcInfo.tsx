@@ -33,7 +33,8 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 label="Indirizzo Cluster vSphere"
                 style={{ marginBottom: '24px' }}
               >
-                <MenuItem value="10.19.6.1">10.19.6.1</MenuItem>
+                <MenuItem value="select">select</MenuItem>
+                <MenuItem value="viceda01.elogic.it">viceda01.elogic.it</MenuItem>
               </Select>
             </FormControl>)}
 	/>
@@ -51,7 +52,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcUrlTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
                 {selectOptions.datacenterOptions != null && selectOptions.datacenterOptions.map(datacenter => (
-                <MenuItem key={datacenter.value} value={datacenter.value}>{datacenter.value}</MenuItem>
+                <MenuItem key={datacenter.name} value={datacenter.name}>{datacenter.name}</MenuItem>
 	            ))}
               </Select>
             </FormControl>
@@ -71,7 +72,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
               >
               {selectOptions.thumbprintOptions != null && selectOptions.thumbprintOptions.map(thumbprint => (
-                <MenuItem key={thumbprint.sha256} value={thumbprint.sha256}>{thumbprint.name}</MenuItem>
+                <MenuItem key={thumbprint.name} value={thumbprint.sha256}>{thumbprint.sha256}</MenuItem>
 	      ))}
              </Select>
             </FormControl>
@@ -92,7 +93,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 disabled={!selectOptions.dcNameTemplate} // Disabilitato se non c'è selezione o se sta caricando
             >
                 {selectOptions.resourcepoolOptions != null && selectOptions.resourcepoolOptions.map(resourcepool => (
-                <MenuItem key={resourcepool.path} value={resourcepool.path}>{resourcepool.name}</MenuItem>
+                <MenuItem key={resourcepool.name} value={resourcepool.path}>{resourcepool.name}</MenuItem>
 	            ))}
               </Select>
             </FormControl>)}
@@ -110,7 +111,7 @@ export const VSphereDcInfo = ({ control, selectOptions }: VSphereDcInfoProps) =>
                 style={{ marginBottom: '24px' }}
             >
                 {selectOptions.folderOptions != null && selectOptions.folderOptions.map(folder => (
-                <MenuItem key={folder.path} value={folder.path}>{folder.name}</MenuItem>
+                <MenuItem key={folder.name} value={folder.path}>{folder.name}</MenuItem>
 	            ))}
               </Select>
             </FormControl>)}

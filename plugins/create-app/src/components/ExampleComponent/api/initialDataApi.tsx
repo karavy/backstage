@@ -14,12 +14,14 @@ export async function loadInitialFormData(fetcher, owner, entity) {
 
   let data = await response.json();
 
-  const newVersion = semver.inc(data.spec.repotag, 'major');
-  data.spec.repotag = newVersion;
 
-  // 6. Usa reset() per popolare l'intero form con i dati ricevuti
   if (data && data.spec) {
-    return data.spec;
+  	const newVersion = semver.inc(data.spec.repotag, 'major');
+  	data.spec.repotag = newVersion;
+	if (data.spec.sveltosapps == null) {
+		data.spec.sveltosapps = [];
+	}
+        return data.spec;
   }
 
   throw new Error("Dati non validi ricevuti dall'API.");
